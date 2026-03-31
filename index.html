@@ -4,307 +4,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Outcome Tracker</title>
+    <title>Daily Task Tracker</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
         
-        /* — Header — */
-        .header { background: linear-gradient(135deg, #1a237e, #283593); color: #fff; padding: 20px 30px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .header h1 { font-size: 22px; }
-        .header-info { display: flex; gap: 20px; font-size: 14px; }
-        .header-info span { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; }
-
-        /* — Summary Cards — */
-        .summary-bar { display: flex; gap: 12px; padding: 16px 20px; background: #fff; border-bottom: 1px solid #e0e0e0; flex-wrap: wrap; }
-        .summary-card { flex: 1; min-width: 120px; text-align: center; padding: 10px; border-radius: 8px; background: #f5f5f5; }
-        .summary-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
-        .card-total .value { color: #1a237e; }
-        .card-rfd .value { color: #c62828; }
-        .card-verify .value { color: #2e7d32; }
-        .card-rfi .value { color: #e65100; }
-        .card-escalate .value { color: #6a1b9a; }
-        .card-transfer .value { color: #00838f; }
-        .card-snooze .value { color: #f9a825; }
-
-        /* — Filter Bar — */
-        .filter-bar { display: flex; gap: 12px; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e0e0e0; align-items: center; flex-wrap: wrap; }
-        .filter-bar label { font-size: 13px; font-weight: 600; color: #444; }
-        .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; outline: none; }
-        .filter-bar select:focus, .filter-bar input:focus { border-color: #1a237e; box-shadow: 0 0 0 2px rgba(26,35,126,0.15); }
+        .container { max-width: 1200px; margin: 0 auto; }
         
-        .btn { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
-        .btn-primary { background: #1a237e; color: #fff; }
-        .btn-primary:hover { background: #283593; }
-        .btn-success { background: #2e7d32; color: #fff; }
-        .btn-success:hover { background: #388e3c; }
-        .btn-outline { background: #fff; color: #1a237e; border: 1px solid #1a237e; }
-        .btn-outline:hover { background: #e8eaf6; }
-
-        /* — Table — */
-        .table-container { background: #fff; border-radius: 0 0 12px 12px; overflow-x: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        thead th { background: #e8eaf6; color: #1a237e; padding: 12px 14px; text-align: left; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; white-space: nowrap; cursor: pointer; user-select: none; }
-        thead th:hover { background: #c5cae9; }
-        thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
-        tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
-        tbody tr:hover { background: #f5f7ff; }
-        td { padding: 10px 14px; white-space: nowrap; }
-
-        /* — Badges — */
-        .outcome-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-        .badge-rfd { background: #ffebee; color: #c62828; }
-        .badge-verify { background: #e8f5e9; color: #2e7d32; }
-        .badge-rfi { background: #fff3e0; color: #e65100; }
-        .badge-escalate { background: #f3e5f5; color: #6a1b9a; }
-        .badge-transfer { background: #e0f7fa; color: #00838f; }
-        .badge-snooze { background: #fffde7; color: #f57f17; }
-
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
-        .type-bav { background: #e3f2fd; color: #1565c0; }
-        .type-biv { background: #fce4ec; color: #c62828; }
-        .type-bov { background: #e8f5e9; color: #2e7d32; }
-        .type-loa { background: #f3e5f5; color: #6a1b9a; }
-        .type-lrv { background: #fff3e0; color: #e65100; }
-        .type-idv { background: #e8eaf6; color: #1a237e; }
-
-        /* — Modals — */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: #fff; border-radius: 12px; padding: 30px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .modal h2 { margin-bottom: 16px; color: #1a237e; }
-        .modal label { display: block; margin: 10px 0 5px; font-weight: 600; }
-        .modal input, .modal select { width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
-        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-
-        /* — Toast — */
-        .toast { position: fixed; bottom: 30px; right: 30px; background: #2e7d32; color: #fff; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000; }
-        .toast.show { transform: translateY(0); opacity: 1; }
+        /* Header */
+        .header { 
+            background: linear-gradient(135deg, #1a237e, #283593); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 24px; }
+        .header-info { display: flex; gap: 20px; font-size: 14px; margin-top: 10px; }
+        
+        /* Summary Cards */
+        .summary-bar { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .summary-card { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            text-align: center; 
+        }
+        .summary-card .label { color: #666; font-size: 14px; }
+        .summary-card .value { font-size: 28px; font-weight: bold; margin-top: 5px; }
+        
+        /* Table */
+        .table-container { 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #e8eaf6; color: #1a237e; font-weight: bold; }
+        td { 
+            position: relative; 
+        }
+        
+        /* Editable Cells */
+        td input { 
+            width: 100%; 
+            padding: 0; 
+            border: none; 
+            outline: none; 
+            font: inherit; 
+        }
+        td input:focus { background: #f0f8ff; }
+        
+        /* Buttons */
+        .btn { 
+            padding: 6px 12px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: 0.2s; 
+        }
+        .btn-save { background: #4caf50; color: white; }
+        .btn-cancel { background: #f44336; color: white; }
+        .btn-delete { background: #ff9800; color: white; }
+        .btn-add { background: #2196f3; color: white; margin-top: 15px; }
+        
+        /* Status Messages */
+        .toast { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #4caf50; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            display: none; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <h1>📋 Task Outcome Tracker</h1>
-        <div class="header-info">
-            <span>📅 Date: <strong>3/26/2026</strong></span>
-            <span>👤 User: <strong>nindumat</strong></span>
-        </div>
-    </div>
-
-    <!-- Summary Cards -->
-    <div class="summary-bar" id="summaryBar"></div>
-
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <label>Filter:</label>
-        <input type="text" id="searchInput" placeholder="Search Task ID / CID..." style="width: 220px;">
-        <select id="filterType">
-            <option value="">All Task Types</option>
-            <option value="BAV">BAV</option>
-            <option value="BIV">BIV</option>
-            <option value="BOV">BOV</option>
-            <option value="LOA">LOA</option>
-            <option value="LRV">LRV</option>
-            <option value="IDV">IDV</option>
-        </select>
-        <select id="filterOutcome">
-            <option value="">All Outcomes</option>
-            <option value="RFD">RFD</option>
-            <option value="Verify">Verify</option>
-            <option value="RFI">RFI</option>
-            <option value="Escalate">Escalate</option>
-            <option value="Transfer">Transfer</option>
-            <option value="Snooze">Snooze</option>
-        </select>
-        <button class="btn btn-outline" onclick="resetFilters()">Reset</button>
-        <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
-    </div>
-
-    <!-- Add Task Modal -->
-    <div class="modal-overlay" id="addTaskModal">
-        <div class="modal">
-            <h2>📝 Add New Task</h2>
-            <form id="addTaskForm">
-                <label>Task ID:</label>
-                <input type="text" id="newTaskId" required>
-                
-                <label>CID:</label>
-                <input type="text" id="newCid" required>
-                
-                <label>Task Type:</label>
-                <select id="newTaskType" required>
-                    <option value="BAV">BAV</option>
-                    <option value="BIV">BIV</option>
-                    <option value="BOV">BOV</option>
-                    <option value="LOA">LOA</option>
-                    <option value="LRV">LRV</option>
-                    <option value="IDV">IDV</option>
-                </select>
-                
-                <label>Outcome:</label>
-                <select id="newOutcome" required onchange="validateCount()">
-                    <option value="RFD">RFD</option>
-                    <option value="Verify">Verify</option>
-                    <option value="RFI">RFI</option>
-                    <option value="Escalate">Escalate</option>
-                    <option value="Transfer">Transfer</option>
-                    <option value="Snooze">Snooze</option>
-                </select>
-                
-                <label>Count:</label>
-                <input type="number" id="newCount" min="1" required>
-                <div id="countError" style="color:red; display:none;">Invalid count for selected outcome.</div>
-            </form>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                <button class="btn btn-success" onclick="saveNewTask()">Save</button>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Daily Task Tracker</h1>
+            <div class="header-info">
+                <span>📅 Date: <strong id="today"></strong></span>
+                <span>👤 User: <strong>nindumat</strong></span>
             </div>
         </div>
-    </div>
 
-    <!-- Table -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Task ID</th>
-                    <th>CID</th>
-                    <th>Task Type</th>
-                    <th>Outcome</th>
-                    <th>Count</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+        <!-- Summary Cards -->
+        <div class="summary-bar" id="summaryBar"></div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+        <!-- Task Table -->
+        <div class="table-container">
+            <table id="taskTable">
+                <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>CID</th>
+                        <th>Type</th>
+                        <th>Outcome</th>
+                        <th>Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Add New Row Button -->
+        <button class="btn btn-add" onclick="addNewRow()">➕ Add New Task</button>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+    </div>
 
     <script>
-        // — Data Model — 
+        // ===== DATA MODEL ===== 
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        const OUTCOME_COUNT = {
+        const OUTCOME_RULES = {
             'RFD': 2, 'Verify': 2, 'RFI': 2,
             'Escalate': 2, 'Transfer': 1, 'Snooze': 1
         };
 
-        // — Initialize — 
+        // ===== INITIALIZE ===== 
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('today').textContent = new Date().toLocaleDateString();
             renderTable();
-            updateSummaryCards();
+            updateSummary();
         });
 
-        // — Render Table — 
+        // ===== RENDER TABLE ===== 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            
             tasks.forEach((task, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${index + 1}</td>
                     <td>${task.taskId}</td>
                     <td>${task.cid}</td>
-                    <td><span class="type-badge type-${task.taskType.toLowerCase()}">${task.taskType}</span></td>
-                    <td><span class="outcome-badge badge-${task.outcome.toLowerCase().replace(' ', '')}">${task.outcome}</span></td>
+                    <td>${task.type}</td>
+                    <td>${task.outcome}</td>
                     <td>${task.count}</td>
                     <td>
-                        <button class="btn btn-outline btn-sm" onclick="editTask(${index})">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteTask(${index})">Delete</button>
+                        <button class="btn btn-delete" onclick="deleteRow(${index})">🗑️ Delete</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // — Summary Cards — 
-        function updateSummaryCards() {
-            const summaryBar = document.getElementById('summaryBar');
+        // ===== ADD NEW ROW ===== 
+        function addNewRow() {
+            const newTask = {
+                taskId: `TASK-${Date.now().toString().slice(-4)}`,
+                cid: `CID-${Date.now().toString().slice(-4)}`,
+                type: 'BAV',
+                outcome: 'RFD',
+                count: OUTCOME_RULES['RFD']
+            };
+            tasks.push(newTask);
+            saveData();
+            renderTable();
+            updateSummary();
+            showToast('✅ New task added!');
+        }
+
+        // ===== DELETE ROW ===== 
+        function deleteRow(index) {
+            tasks.splice(index, 1);
+            saveData();
+            renderTable();
+            updateSummary();
+            showToast('🗑️ Task deleted');
+        }
+
+        // ===== SUMMARY CARDS ===== 
+        function updateSummary() {
             const stats = { total: tasks.length, RFD: 0, Verify: 0, RFI: 0, Escalate: 0, Transfer: 0, Snooze: 0 };
-            tasks.forEach(task => stats[task.outcome]++);
+            tasks.forEach(t => stats[t.outcome]++);
             
-            summaryBar.innerHTML = `
-                <div class="summary-card card-total">
+            document.getElementById('summaryBar').innerHTML = `
+                <div class="summary-card">
                     <div class="label">Total Tasks</div>
                     <div class="value">${stats.total}</div>
                 </div>
-                <div class="summary-card card-rfd">
+                <div class="summary-card">
                     <div class="label">RFD</div>
                     <div class="value">${stats.RFD}</div>
                 </div>
-                <div class="summary-card card-verify">
+                <div class="summary-card">
                     <div class="label">Verify</div>
                     <div class="value">${stats.Verify}</div>
                 </div>
-                <div class="summary-card card-rfi">
+                <div class="summary-card">
                     <div class="label">RFI</div>
                     <div class="value">${stats.RFI}</div>
                 </div>
-                <div class="summary-card card-escalate">
+                <div class="summary-card">
                     <div class="label">Escalate</div>
                     <div class="value">${stats.Escalate}</div>
                 </div>
-                <div class="summary-card card-transfer">
+                <div class="summary-card">
                     <div class="label">Transfer</div>
                     <div class="value">${stats.Transfer}</div>
                 </div>
-                <div class="summary-card card-snooze">
+                <div class="summary-card">
                     <div class="label">Snooze</div>
                     <div class="value">${stats.Snooze}</div>
                 </div>
             `;
         }
 
-        // — Add New Task — 
-        function addNewRow() {
-            document.getElementById('addTaskModal').classList.add('active');
-        }
-        function closeAddModal() {
-            document.getElementById('addTaskModal').classList.remove('active');
-            document.getElementById('countError').style.display = 'none';
-        }
-        function validateCount() {
-            const outcome = document.getElementById('newOutcome').value;
-            const count = parseInt(document.getElementById('newCount').value);
-            const required = OUTCOME_COUNT[outcome];
-            const errorDiv = document.getElementById('countError');
-            errorDiv.style.display = count !== required ? 'block' : 'none';
-        }
-        function saveNewTask() {
-            if (document.getElementById('countError').style.display === 'block') {
-                showToast('Please fix the count error!');
-                return;
-            }
-            const newTask = {
-                taskId: document.getElementById('newTaskId').value,
-                cid: document.getElementById('newCid').value,
-                taskType: document.getElementById('newTaskType').value,
-                outcome: document.getElementById('newOutcome').value,
-                count: parseInt(document.getElementById('newCount').value)
-            };
-            tasks.push(newTask);
-            saveTasks();
-            renderTable();
-            updateSummaryCards();
-            closeAddModal();
-            showToast('New task added!');
-        }
-
-        // — Persistence — 
-        function saveTasks() {
+        // ===== PERSISTENCE ===== 
+        function saveData() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
-        // — Utility — 
+        // ===== TOAST NOTIFICATION ===== 
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2000);
         }
     </script>
 </body>
