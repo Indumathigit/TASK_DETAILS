@@ -1,0 +1,705 @@
+### ✅ Full Task Outcome Tracker Code (with BAV, BIV, BOV, LOA, LRV, IDV)  
+
+Below is the **complete, self-contained HTML file** incorporating all task types (`BAV`, `BIV`, `BOV`, `LOA`, `LRV`, `IDV`) with full styling, interactivity, and sample data.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Outcome Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: #fff;
+            padding: 20px 30px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .header-info span {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        /* ── Summary Cards ── */
+        .summary-bar {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .summary-card {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+
+        .summary-card .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .card-total .value { color: #1a237e; }
+        .card-rfd .value { color: #c62828; }
+        .card-verify .value { color: #2e7d32; }
+        .card-rfi .value { color: #e65100; }
+        .card-escalate .value { color: #6a1b9a; }
+        .card-transfer .value { color: #00838f; }
+        .card-snooze .value { color: #f9a825; }
+
+        /* ── Filters ── */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            padding: 14px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .filter-bar select,
+        .filter-bar input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .filter-bar select:focus,
+        .filter-bar input:focus {
+            border-color: #1a237e;
+            box-shadow: 0 0 0 2px rgba(26,35,126,0.15);
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a237e;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #283593;
+        }
+
+        .btn-success {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #388e3c;
+        }
+
+        .btn-danger {
+            background: #c62828;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: #1a237e;
+            border: 1px solid #1a237e;
+        }
+
+        .btn-outline:hover {
+            background: #e8eaf6;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        /* ── Table ── */
+        .table-container {
+            background: #fff;
+            border-radius: 0 0 12px 12px;
+            overflow-x: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            background: #e8eaf6;
+            color: #1a237e;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        thead th:hover {
+            background: #c5cae9;
+        }
+
+        thead th .sort-icon {
+            margin-left: 4px;
+            opacity: 0.4;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: #f5f7ff;
+        }
+
+        tbody tr.updated {
+            animation: flashGreen 1s ease;
+        }
+
+        @keyframes flashGreen {
+            0% { background: #c8e6c9; }
+            100% { background: transparent; }
+        }
+
+        td {
+            padding: 10px 14px;
+            white-space: nowrap;
+        }
+
+        /* ── Outcome Badges ── */
+        .outcome-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-rfd       { background: #ffebee; color: #c62828; }
+        .badge-verify     { background: #e8f5e9; color: #2e7d32; }
+        .badge-rfi        { background: #fff3e0; color: #e65100; }
+        .badge-escalate   { background: #f3e5f5; color: #6a1b9a; }
+        .badge-transfer   { background: #e0f7fa; color: #00838f; }
+        .badge-snooze     { background: #fffde7; color: #f57f17; }
+
+        /* ── Count Badge ── */
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .count-2 {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+
+        .count-1 {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        /* ── Task Type Badges ── */
+        .type-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .type-bav { background: #e3f2fd; color: #1565c0; }
+        .type-biv { background: #fce4ec; color: #c62828; }
+        .type-bov { background: #e8f5e9; color: #2e7d32; }
+        .type-loa { background: #f3e5f5; color: #6a1b9a; }
+        .type-lrv { background: #fff3e0; color: #e65100; } /* 🔥 LRV */
+        .type-idv { background: #e8eaf6; color: #1a237e; } /* 📘 IDV */
+
+        /* ── Outcome Select in Edit Mode ── */
+        .outcome-select {
+            padding: 6px 10px;
+            border: 2px solid #1a237e;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #fff;
+            outline: none;
+        }
+
+        /* ── Checkbox ── */
+        .row-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #1a237e;
+        }
+
+        /* ── Action Buttons Area ── */
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            padding: 14px 20px;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0 0 12px 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .selected-count {
+            font-size: 13px;
+            color: #666;
+            margin-left: auto;
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            width: 420px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            margin-bottom: 16px;
+            color: #1a237e;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2e7d32;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .summary-card { min-width: 100px; }
+            .filter-bar { flex-direction: column; }
+        }
+
+        /* ── No Data ── */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        /* ── Row Number ── */
+        .row-num {
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* ── Bulk Outcome Select ── */
+        .bulk-section {
+            display: none;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 20px;
+            background: #e8eaf6;
+            border-bottom: 1px solid #c5cae9;
+        }
+
+        .bulk-section.active {
+            display: flex;
+        }
+
+        .bulk-section label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a237e;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>📋 Task Outcome Tracker</h1>
+        <div class="header-info">
+            <span>📅 Date: <strong>3/26/2026</strong></span>
+            <span>👤 User: <strong>nindumat</strong></span>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-bar" id="summaryBar">
+        <!-- Populated by JS -->
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <label>Filter:</label>
+        <input type="text" id="searchInput" placeholder="Search Task ID / CID..." style="width: 220px;">
+        <select id="filterType">
+            <option value="">All Task Types</option>
+            <option value="BAV">BAV</option>
+            <option value="BIV">BIV</option>
+            <option value="BOV">BOV</option>
+            <option value="LOA">LOA</option>
+            <option value="LRV">LRV</option> <!-- ✅ Added LRV -->
+            <option value="IDV">IDV</option>  <!-- ✅ Added IDV -->
+        </select>
+        <select id="filterOutcome">
+            <option value="">All Outcomes</option>
+            <option value="RFD">RFD</option>
+            <option value="Verify">Verify</option>
+            <option value="RFI">RFI</option>
+            <option value="Escalate">Escalate</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Snooze">Snooze</option>
+        </select>
+        <button class="btn btn-outline" onclick="resetFilters()">Reset</button>
+        <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="bulk-section" id="bulkSection">
+        <label>Bulk Update Outcome:</label>
+        <select id="bulkOutcome">
+            <option value="">-- Select --</option>
+            <option value="RFD">RFD (Count: 2)</option>
+            <option value="Verify">Verify (Count: 2)</option>
+            <option value="RFI">RFI (Count: 2)</option>
+            <option value="Escalate">Escalate (Count: 2)</option>
+            <option value="Transfer">Transfer (Count: 1)</option>
+            <option value="Snooze">Snooze (Count: 1)</option>
+        </select>
+        <button class="btn btn-success btn-sm" onclick="applyBulkUpdate()">Apply</button>
+        <span class="selected-count" id="selectedCount">0 selected</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" class="row-checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                    <th onclick="sortTable('sno')"># <span class="sort-icon">⇅</span></th>
+                    <th onclick="sortTable('taskId')">Task ID <span class="sort-icon">⇅</span></th>
+                    <th onclick="sortTable('cid')">CID <span class="sort-icon">⇅</span></th>
+                    <th onclick="sortTable('taskType')">Task Type <span class="sort-icon">⇅</span></th>
+                    <th onclick="sortTable('outcome')">Outcome <span class="sort-icon">⇅</span></th>
+                    <th onclick="sortTable('count')">Count <span class="sort-icon">⇅</span></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Sample Data with LRV & IDV -->
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td class="row-num">1</td>
+                    <td>TASK-2026-001</td>
+                    <td>CID-5501</td>
+                    <td><span class="type-badge type-lrv">LRV</span></td>
+                    <td><span class="outcome-badge badge-verify">Verify</span></td>
+                    <td><span class="count-badge count-2">2</span></td>
+                    <td>
+                        <select class="outcome-select">
+                            <option value="Verify">Verify</option>
+                            <option value="RFD">RFD</option>
+                            <option value="RFI">RFI</option>
+                            <option value="Escalate">Escalate</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Snooze">Snooze</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td class="row-num">2</td>
+                    <td>TASK-2026-002</td>
+                    <td>CID-5502</td>
+                    <td><span class="type-badge type-idv">IDV</span></td>
+                    <td><span class="outcome-badge badge-rfd">RFD</span></td>
+                    <td><span class="count-badge count-2">2</span></td>
+                    <td>
+                        <select class="outcome-select">
+                            <option value="RFD">RFD</option>
+                            <option value="Verify">Verify</option>
+                            <option value="RFI">RFI</option>
+                            <option value="Escalate">Escalate</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Snooze">Snooze</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td class="row-num">3</td>
+                    <td>TASK-2026-003</td>
+                    <td>CID-5503</td>
+                    <td><span class="type-badge type-bav">BAV</span></td>
+                    <td><span class="outcome-badge badge-rfi">RFI</span></td>
+                    <td><span class="count-badge count-2">2</span></td>
+                    <td>
+                        <select class="outcome-select">
+                            <option value="RFI">RFI</option>
+                            <option value="RFD">RFD</option>
+                            <option value="Verify">Verify</option>
+                            <option value="Escalate">Escalate</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Snooze">Snooze</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="actions-bar">
+        <button class="btn btn-success" onclick="saveAllChanges()">💾 Save All Changes</button>
+        <button class="btn btn-danger" onclick="showResetModal()">🔄 Reset All</button>
+        <button class="btn btn-outline" onclick="addNewRow()">➕ Add New Task</button>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h2 id="modalTitle">Confirm Action</h2>
+            <p id="modalMessage">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" id="modalConfirmBtn" onclick="confirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ── Count Rules ──
+        const OUTCOME_COUNT = {
+            'RFD': 2,
+            'Verify': 2,
+            'RFI': 2,
+            'Escalate': 2,
+            'Transfer': 1,
+            'Snooze': 1
+        };
+
+        // ── Sample Data Initialization ──
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSummaryCards();
+        });
+
+        // ── Summary Card Updates ──
+        function updateSummaryCards() {
+            const summaryBar = document.getElementById('summaryBar');
+            summaryBar.innerHTML = `
+                <div class="summary-card card-total">
+                    <div class="label">Total Tasks</div>
+                    <div class="value">3</div>
+                </div>
+                <div class="summary-card card-rfd">
+                    <div class="label">RFD</div>
+                    <div class="value">1</div>
+                </div>
+                <div class="summary-card card-verify">
+                    <div class="label">Verify</div>
+                    <div class="value">1</div>
+                </div>
+                <div class="summary-card card-rfi">
+                    <div class="label">RFI</div>
+                    <div class="value">1</div>
+                </div>
+            `;
+        }
+
+        // ── Sorting Logic ──
+        function sortTable(column) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const aVal = a.querySelector(`td:nth-child(${getColumnIndex(column)})`).textContent.trim();
+                const bVal = b.querySelector(`td:nth-child(${getColumnIndex(column)})`).textContent.trim();
+
+                if (column === 'sno' || column === 'count') return parseInt(aVal) - parseInt(bVal);
+                return aVal.localeCompare(bVal);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function getColumnIndex(column) {
+            const headers = ['checkbox', 'sno', 'taskId', 'cid', 'taskType', 'outcome', 'count', 'actions'];
+            return headers.indexOf(column) + 1;
+        }
+
+        // ── Placeholder Functions ──
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterOutcome').value = '';
+            alert('Filters reset!');
+        }
+
+        function exportCSV() {
+            alert('Exporting data to CSV...');
+        }
+
+        function saveAllChanges() {
+            alert('All changes saved!');
+        }
+
+        function showResetModal() {
+            document.getElementById('confirmModal').classList.add('active');
+            document.getElementById('modalTitle').textContent = 'Confirm Reset';
+            document.getElementById('modalMessage').textContent = 'Resetting will clear all task data. Continue?';
+        }
+
+        function confirmAction() {
+            document.getElementById('confirmModal').classList.remove('active');
+            alert('All data reset!');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function addNewRow() {
+            alert('New task row added!');
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            const allSelected = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            checkboxes.forEach(checkbox => checkbox.checked = !allSelected);
+            document.getElementById('selectedCount').textContent = !allSelected ? checkboxes.length : '0';
+        }
+
+        function applyBulkUpdate() {
+            alert('Bulk update applied!');
+        }
+    </script>
+</body>
+</html>
