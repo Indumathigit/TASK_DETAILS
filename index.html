@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual Task Tracker (Editable)</title>
+    <title>Manual Task Tracker (Count-Sum)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
@@ -137,24 +137,26 @@
             </div>
         </div>
 
-        <!-- Summary Sections -->
+        <!-- === TOTAL COUNT SECTION === -->
         <div class="summary-section">
-            <div class="summary-title">📊 Overall Stats</div>
+            <div class="summary-title">📊 Total Count (Sum of All Counts)</div>
             <div class="summary-grid">
                 <div class="summary-card">
-                    <div class="label">TOTAL TASKS</div>
-                    <div class="value" id="totalTasks">0</div>
+                    <div class="label">TOTAL COUNT</div>
+                    <div class="value" id="totalCount">0</div>
                 </div>
             </div>
         </div>
 
+        <!-- === OUTCOME BREAKDOWN === -->
         <div class="summary-section">
-            <div class="summary-title">📈 Outcome Breakdown</div>
+            <div class="summary-title">📈 Outcome Breakdown (Sum of Counts)</div>
             <div class="summary-grid" id="outcomeSummary"></div>
         </div>
 
+        <!-- === TASK TYPE BREAKDOWN === -->
         <div class="summary-section">
-            <div class="summary-title">📦 Task Type Breakdown</div>
+            <div class="summary-title">📦 Task Type Breakdown (Sum of Counts)</div>
             <div class="summary-grid" id="typeSummary"></div>
         </div>
 
@@ -273,8 +275,12 @@
         // ===== DATA MODEL ===== 
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         const OUTCOME_RULES = {
-            'RFD': 2, 'Verify': 2, 'RFI': 2,
-            'Escalate': 2, 'Transfer': 1, 'Snooze': 1
+            'RFD': 2, 
+            'Verify': 2, 
+            'RFI': 2,
+            'Escalate': 2, 
+            'Transfer': 1, 
+            'Snooze': 1
         };
 
         // ===== INITIALIZE ===== 
@@ -462,10 +468,11 @@
 
         // ===== SUMMARY UPDATES ===== 
         function updateSummary() {
-            // Total Tasks
-            document.getElementById('totalTasks').textContent = tasks.length;
+            // === TOTAL COUNT (SUM OF ALL COUNTS) ===
+            const totalCount = tasks.reduce((sum, task) => sum + task.count, 0);
+            document.getElementById('totalCount').textContent = totalCount;
 
-            // Outcome Breakdown
+            // === OUTCOME BREAKDOWN (SUM OF COUNTS PER OUTCOME) ===
             const outcomeStats = { 
                 RFD: 0, 
                 Verify: 0, 
@@ -474,7 +481,9 @@
                 Transfer: 0, 
                 Snooze: 0 
             };
-            tasks.forEach(t => outcomeStats[t.outcome]++);
+            tasks.forEach(t => {
+                outcomeStats[t.outcome] += t.count;
+            });
             let outcomeHTML = '';
             for (const [key, value] of Object.entries(outcomeStats)) {
                 outcomeHTML += `
@@ -486,7 +495,7 @@
             }
             document.getElementById('outcomeSummary').innerHTML = outcomeHTML;
 
-            // Task Type Breakdown
+            // === TASK TYPE BREAKDOWN (SUM OF COUNTS PER TYPE) ===
             const typeStats = {
                 BAV: 0,
                 BIV: 0,
@@ -495,7 +504,9 @@
                 LRV: 0,
                 IDV: 0
             };
-            tasks.forEach(t => typeStats[t.type]++);
+            tasks.forEach(t => {
+                typeStats[t.type] += t.count;
+            });
             let typeHTML = '';
             for (const [key, value] of Object.entries(typeStats)) {
                 typeHTML += `
