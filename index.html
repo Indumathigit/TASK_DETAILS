@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Task Tracker</title>
+    <title>Manual Task Tracker</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
@@ -49,19 +49,6 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
         th { background: #e8eaf6; color: #1a237e; font-weight: bold; }
-        td { 
-            position: relative; 
-        }
-        
-        /* Editable Cells */
-        td input { 
-            width: 100%; 
-            padding: 0; 
-            border: none; 
-            outline: none; 
-            font: inherit; 
-        }
-        td input:focus { background: #f0f8ff; }
         
         /* Buttons */
         .btn { 
@@ -70,14 +57,51 @@
             border-radius: 4px; 
             cursor: pointer; 
             font-size: 12px; 
+            margin: 2px; 
             transition: 0.2s; 
         }
-        .btn-save { background: #4caf50; color: white; }
-        .btn-cancel { background: #f44336; color: white; }
+        .btn-type { background: #2196f3; color: white; }
+        .btn-outcome { background: #4caf50; color: white; }
         .btn-delete { background: #ff9800; color: white; }
-        .btn-add { background: #2196f3; color: white; margin-top: 15px; }
+        .btn-add { background: #673ab7; color: white; margin-top: 15px; }
         
-        /* Status Messages */
+        /* Modal */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            width: 500px; 
+            max-width: 90vw; 
+        }
+        .modal h2 { margin-bottom: 15px; color: #1a237e; }
+        .modal label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        .modal input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .type-buttons, .outcome-buttons { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 5px; 
+            margin: 10px 0; 
+        }
+        .modal-actions { 
+            margin-top: 20px; 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
+        }
+        
+        /* Toast */
         .toast { 
             position: fixed; 
             bottom: 20px; 
@@ -87,7 +111,6 @@
             padding: 12px 20px; 
             border-radius: 4px; 
             display: none; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
         }
     </style>
 </head>
@@ -121,10 +144,53 @@
             </table>
         </div>
 
-        <!-- Add New Row Button -->
-        <button class="btn btn-add" onclick="addNewRow()">➕ Add New Task</button>
+        <!-- Add New Task Button -->
+        <button class="btn btn-add" onclick="showAddModal()">➕ Add New Task</button>
 
-        <!-- Toast Notification -->
+        <!-- Add Task Modal -->
+        <div class="modal-overlay" id="addModal">
+            <div class="modal">
+                <h2>📝 Add New Task</h2>
+                
+                <label>Task ID:</label>
+                <input type="text" id="newTaskId" required>
+                
+                <label>CID:</label>
+                <input type="text" id="newCid" required>
+                
+                <label>Type:</label>
+                <div class="type-buttons">
+                    <button class="btn btn-type" onclick="selectType('BAV')">BAV</button>
+                    <button class="btn btn-type" onclick="selectType('BIV')">BIV</button>
+                    <button class="btn btn-type" onclick="selectType('BOV')">BOV</button>
+                    <button class="btn btn-type" onclick="selectType('LOA')">LOA</button>
+                    <button class="btn btn-type" onclick="selectType('LRV')">LRV</button>
+                    <button class="btn btn-type" onclick="selectType('IDV')">IDV</button>
+                </div>
+                <input type="hidden" id="selectedType" required>
+                
+                <label>Outcome:</label>
+                <div class="outcome-buttons">
+                    <button class="btn btn-outcome" onclick="selectOutcome('RFD')">RFD</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Verify')">Verify</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('RFI')">RFI</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Escalate')">Escalate</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Transfer')">Transfer</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Snooze')">Snooze</button>
+                </div>
+                <input type="hidden" id="selectedOutcome" required>
+                
+                <label>Count:</label>
+                <input type="number" id="newCount" min="1" required>
+                
+                <div class="modal-actions">
+                    <button class="btn" onclick="hideAddModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveNewTask()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
         <div class="toast" id="toast"></div>
     </div>
 
@@ -143,6 +209,65 @@
             updateSummary();
         });
 
+        // ===== MODAL HANDLERS ===== 
+        function showAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+        function hideAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        // ===== TYPE/OUTCOME SELECTION ===== 
+        let selectedType = null;
+        let selectedOutcome = null;
+        
+        function selectType(type) {
+            selectedType = type;
+            document.getElementById('selectedType').value = type;
+            document.querySelectorAll('.btn-type').forEach(btn => 
+                btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
+            );
+        }
+        
+        function selectOutcome(outcome) {
+            selectedOutcome = outcome;
+            document.getElementById('selectedOutcome').value = outcome;
+            document.querySelectorAll('.btn-outcome').forEach(btn => 
+                btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
+            );
+        }
+
+        // ===== SAVE NEW TASK ===== 
+        function saveNewTask() {
+            if (!selectedType || !selectedOutcome) {
+                showToast('❗ Select Type and Outcome!');
+                return;
+            }
+            
+            const count = parseInt(document.getElementById('newCount').value);
+            const requiredCount = OUTCOME_RULES[selectedOutcome];
+            
+            if (count !== requiredCount) {
+                showToast(`❗ ${selectedOutcome} requires count = ${requiredCount}!`);
+                return;
+            }
+            
+            const newTask = {
+                taskId: document.getElementById('newTaskId').value,
+                cid: document.getElementById('newCid').value,
+                type: selectedType,
+                outcome: selectedOutcome,
+                count: count
+            };
+            
+            tasks.push(newTask);
+            saveData();
+            renderTable();
+            updateSummary();
+            hideAddModal();
+            showToast('✅ Task added successfully!');
+        }
+
         // ===== RENDER TABLE ===== 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
@@ -157,31 +282,15 @@
                     <td>${task.outcome}</td>
                     <td>${task.count}</td>
                     <td>
-                        <button class="btn btn-delete" onclick="deleteRow(${index})">🗑️ Delete</button>
+                        <button class="btn btn-delete" onclick="deleteTask(${index})">🗑️ Delete</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // ===== ADD NEW ROW ===== 
-        function addNewRow() {
-            const newTask = {
-                taskId: `TASK-${Date.now().toString().slice(-4)}`,
-                cid: `CID-${Date.now().toString().slice(-4)}`,
-                type: 'BAV',
-                outcome: 'RFD',
-                count: OUTCOME_RULES['RFD']
-            };
-            tasks.push(newTask);
-            saveData();
-            renderTable();
-            updateSummary();
-            showToast('✅ New task added!');
-        }
-
-        // ===== DELETE ROW ===== 
-        function deleteRow(index) {
+        // ===== DELETE TASK ===== 
+        function deleteTask(index) {
             tasks.splice(index, 1);
             saveData();
             renderTable();
