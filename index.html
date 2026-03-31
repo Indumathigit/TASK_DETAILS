@@ -4,544 +4,502 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Outcome Tracker</title>
+    <title>Task Tracker with Edit Support</title>
     <style>
-        /* — Existing CSS — */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Header */
+        .header { 
+            background: linear-gradient(135deg, #1a237e, #283593); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 20px;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            padding: 20px;
+        .header h1 { font-size: 24px; }
+        .header-info { display: flex; gap: 20px; font-size: 14px; margin-top: 10px; }
+        
+        /* Summary Sections */
+        .summary-section { margin-bottom: 20px; }
+        .summary-title { 
+            background: #fff; 
+            padding: 10px 15px; 
+            border-radius: 8px 8px 0 0; 
+            font-weight: bold; 
+            color: #1a237e; 
         }
-        .header {
-            background: linear-gradient(135deg, #1a237e, #283593);
-            color: #fff;
-            padding: 20px 30px;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+        .summary-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 15px; 
+            background: #fff; 
+            padding: 15px; 
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .header h1 { font-size: 22px; }
-        .header-info { display: flex; gap: 20px; font-size: 14px; }
-        .header-info span {
-            background: rgba(255,255,255,0.15);
-            padding: 6px 14px;
-            border-radius: 20px;
+        .summary-card { 
+            text-align: center; 
+            padding: 15px; 
+            border-radius: 8px; 
+            background: #f8f9fa; 
+            border: 1px solid #e9ecef;
         }
-        .summary-bar { display: flex; gap: 12px; padding: 16px 20px; background: #fff; border-bottom: 1px solid #e0e0e0; flex-wrap: wrap; }
-        .summary-card { flex: 1; min-width: 120px; text-align: center; padding: 10px; border-radius: 8px; background: #f5f5f5; }
-        .summary-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
-        .card-total .value { color: #1a237e; }
-        .card-rfd .value { color: #c62828; }
-        .card-verify .value { color: #2e7d32; }
-        .card-rfi .value { color: #e65100; }
-        .card-escalate .value { color: #6a1b9a; }
-        .card-transfer .value { color: #00838f; }
-        .card-snooze .value { color: #f9a825; }
-        .filter-bar { display: flex; gap: 12px; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e0e0e0; align-items: center; flex-wrap: wrap; }
-        .filter-bar label { font-size: 13px; font-weight: 600; color: #444; }
-        .filter-bar select, .filter-bar input {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
+        .summary-card .label { color: #666; font-size: 14px; }
+        .summary-card .value { font-size: 28px; font-weight: bold; margin-top: 5px; color: #1a237e; }
+        
+        /* Table */
+        .table-container { 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            margin-bottom: 20px;
         }
-        .filter-bar select:focus, .filter-bar input:focus {
-            border-color: #1a237e; box-shadow: 0 0 0 2px rgba(26,35,126,0.15);
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #e8eaf6; color: #1a237e; font-weight: bold; }
+        
+        /* Buttons */
+        .btn { 
+            padding: 6px 12px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            margin: 2px; 
+            transition: 0.2s; 
         }
-        .btn {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
+        .btn-type { background: #2196f3; color: white; }
+        .btn-outcome { background: #4caf50; color: white; }
+        .btn-delete { background: #ff9800; color: white; }
+        .btn-edit { background: #009688; color: white; }
+        .btn-add { background: #673ab7; color: white; margin-top: 15px; }
+        
+        /* Modals */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
         }
-        .btn-primary { background: #1a237e; color: #fff; }
-        .btn-primary:hover { background: #283593; }
-        .btn-success { background: #2e7d32; color: #fff; }
-        .btn-success:hover { background: #388e3c; }
-        .btn-danger { background: #c62828; color: #fff; }
-        .btn-danger:hover { background: #d32f2f; }
-        .btn-outline { background: #fff; color: #1a237e; border: 1px solid #1a237e; }
-        .btn-outline:hover { background: #e8eaf6; }
-        .btn-sm { padding: 5px 12px; font-size: 12px; }
-        .table-container { background: #fff; border-radius: 0 0 12px 12px; overflow-x: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        thead th {
-            background: #e8eaf6;
-            color: #1a237e;
-            padding: 12px 14px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-            white-space: nowrap;
-            cursor: pointer;
-            user-select: none;
+        .modal { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            width: 500px; 
+            max-width: 90vw; 
         }
-        thead th:hover { background: #c5cae9; }
-        thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
-        tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
-        tbody tr:hover { background: #f5f7ff; }
-        tbody tr.updated { animation: flashGreen 1s ease; }
-        @keyframes flashGreen { 0% { background: #c8e6c9; } 100% { background: transparent; } }
-        td { padding: 10px 14px; white-space: nowrap; }
-        .outcome-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+        .modal h2 { margin-bottom: 15px; color: #1a237e; }
+        .modal label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        .modal input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .type-buttons, .outcome-buttons { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 5px; 
+            margin: 10px 0; 
         }
-        .badge-rfd { background: #ffebee; color: #c62828; }
-        .badge-verify { background: #e8f5e9; color: #2e7d32; }
-        .badge-rfi { background: #fff3e0; color: #e65100; }
-        .badge-escalate { background: #f3e5f5; color: #6a1b9a; }
-        .badge-transfer { background: #e0f7fa; color: #00838f; }
-        .badge-snooze { background: #fffde7; color: #f57f17; }
-        .count-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-weight: 700;
-            font-size: 14px;
+        .modal-actions { 
+            margin-top: 20px; 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
         }
-        .count-2 { background: #e8eaf6; color: #1a237e; }
-        .count-1 { background: #fff3e0; color: #e65100; }
-        .type-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        .type-bav { background: #e3f2fd; color: #1565c0; }
-        .type-biv { background: #fce4ec; color: #c62828; }
-        .type-bov { background: #e8f5e9; color: #2e7d32; }
-        .type-loa { background: #f3e5f5; color: #6a1b9a; }
-        .type-lrv { background: #fff3e0; color: #e65100; }
-        .type-idv { background: #e8eaf6; color: #1a237e; }
-        .outcome-select { padding: 6px 10px; border: 2px solid #1a237e; border-radius: 6px; font-size: 13px; font-weight: 600; background: #fff; outline: none; }
-        .row-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #1a237e; }
-        .actions-bar { display: flex; gap: 10px; padding: 14px 20px; background: #fff; border-top: 1px solid #e0e0e0; border-radius: 0 0 12px 12px; flex-wrap: wrap; align-items: center; }
-        .selected-count { font-size: 13px; color: #666; margin-left: auto; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: #fff; border-radius: 12px; padding: 30px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .modal h2 { margin-bottom: 16px; color: #1a237e; }
-        .modal p { color: #666; margin-bottom: 20px; font-size: 14px; }
-        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #2e7d32;
-            color: #fff;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
+        
+        /* Toast */
+        .toast { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #4caf50; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            display: none; 
             z-index: 2000;
         }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        @media (max-width: 768px) {
-            .header { flex-direction: column; text-align: center; }
-            .summary-card { min-width: 100px; }
-            .filter-bar { flex-direction: column; }
-        }
-        .no-data { text-align: center; padding: 40px; color: #999; font-size: 16px; }
-        .row-num { color: #999; font-size: 12px; }
-        .bulk-section { display: none; gap: 10px; align-items: center; padding: 10px 20px; background: #e8eaf6; border-bottom: 1px solid #c5cae9; }
-        .bulk-section.active { display: flex; }
-        .bulk-section label { font-size: 13px; font-weight: 600; color: #1a237e; }
     </style>
 </head>
 <body>
-
-    <!-- Header -->
-    <div class="header">
-        <h1>📋 Task Outcome Tracker</h1>
-        <div class="header-info">
-            <span>📅 Date: <strong>3/26/2026</strong></span>
-            <span>👤 User: <strong>nindumat</strong></span>
-        </div>
-    </div>
-
-    <!-- Summary Cards -->
-    <div class="summary-bar" id="summaryBar"></div>
-
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <label>Filter:</label>
-        <input type="text" id="searchInput" placeholder="Search Task ID / CID..." style="width: 220px;">
-        <select id="filterType">
-            <option value="">All Task Types</option>
-            <option value="BAV">BAV</option>
-            <option value="BIV">BIV</option>
-            <option value="BOV">BOV</option>
-            <option value="LOA">LOA</option>
-            <option value="LRV">LRV</option>
-            <option value="IDV">IDV</option>
-        </select>
-        <select id="filterOutcome">
-            <option value="">All Outcomes</option>
-            <option value="RFD">RFD</option>
-            <option value="Verify">Verify</option>
-            <option value="RFI">RFI</option>
-            <option value="Escalate">Escalate</option>
-            <option value="Transfer">Transfer</option>
-            <option value="Snooze">Snooze</option>
-        </select>
-        <button class="btn btn-outline" onclick="resetFilters()">Reset</button>
-        <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
-    </div>
-
-    <!-- Bulk Actions -->
-    <div class="bulk-section" id="bulkSection">
-        <label>Bulk Update Outcome:</label>
-        <select id="bulkOutcome">
-            <option value="">-- Select --</option>
-            <option value="RFD">RFD (Count: 2)</option>
-            <option value="Verify">Verify (Count: 2)</option>
-            <option value="RFI">RFI (Count: 2)</option>
-            <option value="Escalate">Escalate (Count: 2)</option>
-            <option value="Transfer">Transfer (Count: 1)</option>
-            <option value="Snooze">Snooze (Count: 1)</option>
-        </select>
-        <button class="btn btn-success btn-sm" onclick="applyBulkUpdate()">Apply</button>
-        <span class="selected-count" id="selectedCount">0 selected</span>
-    </div>
-
-    <!-- Table -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th><input type="checkbox" class="row-checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
-                    <th onclick="sortTable('sno')"># <span class="sort-icon">⇅</span></th>
-                    <th onclick="sortTable('taskId')">Task ID <span class="sort-icon">⇅</span></th>
-                    <th onclick="sortTable('cid')">CID <span class="sort-icon">⇅</span></th>
-                    <th onclick="sortTable('taskType')">Task Type <span class="sort-icon">⇅</span></th>
-                    <th onclick="sortTable('outcome')">Outcome <span class="sort-icon">⇅</span></th>
-                    <th onclick="sortTable('count')">Count <span class="sort-icon">⇅</span></th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
-
-    <!-- Actions Bar -->
-    <div class="actions-bar">
-        <button class="btn btn-success" onclick="saveAllChanges()">💾 Save All Changes</button>
-        <button class="btn btn-danger" onclick="showResetModal()">🔄 Reset All</button>
-        <button class="btn btn-outline" onclick="addNewRow()">➕ Add New Task</button>
-    </div>
-
-    <!-- Confirm Modal -->
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal">
-            <h2 id="modalTitle">Confirm Action</h2>
-            <p id="modalMessage">Are you sure you want to proceed?</p>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-danger" id="modalConfirmBtn" onclick="confirmAction()">Confirm</button>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Task Tracker</h1>
+            <div class="header-info">
+                <span>📅 Date: <strong id="today"></strong></span>
+                <span>👤 User: <strong>nindumat</strong></span>
             </div>
         </div>
-    </div>
 
-    <!-- Task Edit Modal -->
-    <div class="modal-overlay" id="editModal">
-        <div class="modal">
-            <h2 id="editModalTitle">Edit Task</h2>
-            <form id="editForm">
+        <!-- Summary Sections -->
+        <div class="summary-section">
+            <div class="summary-title">📊 Total Count</div>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="label">TOTAL TASKS</div>
+                    <div class="value" id="totalTasks">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Table -->
+        <div class="table-container">
+            <table id="taskTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Task ID</th>
+                        <th>CID</th>
+                        <th>Type</th>
+                        <th>Outcome</th>
+                        <th>Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Add/Edit Task Buttons -->
+        <button class="btn btn-add" onclick="showAddModal()">➕ Add New Task</button>
+
+        <!-- Add Task Modal -->
+        <div class="modal-overlay" id="addModal">
+            <div class="modal">
+                <h2>📝 Add New Task</h2>
+                <label>Date:</label>
+                <input type="date" id="newDate" required>
+                
                 <label>Task ID:</label>
-                <input type="text" id="editTaskId" required><br>
+                <input type="text" id="newTaskId" required>
+                
                 <label>CID:</label>
-                <input type="text" id="editCid" required><br>
-                <label>Task Type:</label>
-                <select id="editTaskType" required>
-                    <option value="BAV">BAV</option>
-                    <option value="BIV">BIV</option>
-                    <option value="BOV">BOV</option>
-                    <option value="LOA">LOA</option>
-                    <option value="LRV">LRV</option>
-                    <option value="IDV">IDV</option>
-                </select><br>
+                <input type="text" id="newCid" required>
+                
+                <label>Type:</label>
+                <div class="type-buttons">
+                    <button class="btn btn-type" onclick="selectType('BAV')">BAV</button>
+                    <button class="btn btn-type" onclick="selectType('BIV')">BIV</button>
+                    <button class="btn btn-type" onclick="selectType('BOV')">BOV</button>
+                    <button class="btn btn-type" onclick="selectType('LOA')">LOA</button>
+                    <button class="btn btn-type" onclick="selectType('LRV')">LRV</button>
+                    <button class="btn btn-type" onclick="selectType('IDV')">IDV</button>
+                </div>
+                <input type="hidden" id="selectedType" required>
+                
                 <label>Outcome:</label>
-                <select id="editOutcome" required>
-                    <option value="RFD">RFD</option>
-                    <option value="Verify">Verify</option>
-                    <option value="RFI">RFI</option>
-                    <option value="Escalate">Escalate</option>
-                    <option value="Transfer">Transfer</option>
-                    <option value="Snooze">Snooze</option>
-                </select><br>
+                <div class="outcome-buttons">
+                    <button class="btn btn-outcome" onclick="selectOutcome('RFD')">RFD</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Verify')">Verify</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('RFI')">RFI</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Escalate')">Escalate</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Transfer')">Transfer</button>
+                    <button class="btn btn-outcome" onclick="selectOutcome('Snooze')">Snooze</button>
+                </div>
+                <input type="hidden" id="selectedOutcome" required>
+                
+                <label>Count:</label>
+                <input type="number" id="newCount" min="1" required>
+                
+                <div class="modal-actions">
+                    <button class="btn" onclick="hideAddModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveNewTask()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Task Modal -->
+        <div class="modal-overlay" id="editModal">
+            <div class="modal">
+                <h2>📝 Edit Task</h2>
+                <input type="hidden" id="editIndex">
+                <label>Date:</label>
+                <input type="date" id="editDate" required>
+                
+                <label>Task ID:</label>
+                <input type="text" id="editTaskId" required>
+                
+                <label>CID:</label>
+                <input type="text" id="editCid" required>
+                
+                <label>Type:</label>
+                <div class="type-buttons">
+                    <button class="btn btn-type" onclick="editSelectType('BAV')">BAV</button>
+                    <button class="btn btn-type" onclick="editSelectType('BIV')">BIV</button>
+                    <button class="btn btn-type" onclick="editSelectType('BOV')">BOV</button>
+                    <button class="btn btn-type" onclick="editSelectType('LOA')">LOA</button>
+                    <button class="btn btn-type" onclick="editSelectType('LRV')">LRV</button>
+                    <button class="btn btn-type" onclick="editSelectType('IDV')">IDV</button>
+                </div>
+                <input type="hidden" id="editSelectedType" required>
+                
+                <label>Outcome:</label>
+                <div class="outcome-buttons">
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('RFD')">RFD</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Verify')">Verify</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('RFI')">RFI</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Escalate')">Escalate</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Transfer')">Transfer</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Snooze')">Snooze</button>
+                </div>
+                <input type="hidden" id="editSelectedOutcome" required>
+                
                 <label>Count:</label>
                 <input type="number" id="editCount" min="1" required>
-            </form>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
-                <button class="btn btn-success" onclick="saveEdit()">Save</button>
+                
+                <div class="modal-actions">
+                    <button class="btn" onclick="hideEditModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveEditTask()">Save</button>
+                </div>
             </div>
         </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
     </div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
-
     <script>
-        // ── Data Model ──
+        // ===== DATA MODEL ===== 
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        const OUTCOME_COUNT = {
-            'RFD': 2, 'Verify': 2, 'RFI': 2,
-            'Escalate': 2, 'Transfer': 1, 'Snooze': 1
+        const OUTCOME_RULES = {
+            'RFD': 2, 
+            'Verify': 2, 
+            'RFI': 2,
+            'Escalate': 2, 
+            'Transfer': 1, 
+            'Snooze': 1
         };
 
-        // ── Initialize App ──
+        // ===== INITIALIZE ===== 
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('today').textContent = new Date().toLocaleDateString();
             renderTable();
-            updateSummaryCards();
-            attachEventListeners();
+            updateSummary();
         });
 
-        // ── Render Table ──
+        // ===== MODAL HANDLERS ===== 
+        let editIndex = null;
+        
+        function showAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+            resetModalSelections('add');
+            document.getElementById('newDate').valueAsDate = new Date();
+        }
+        
+        function hideAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+            resetModalSelections('add');
+        }
+        
+        function showEditModal(index) {
+            editIndex = index;
+            const task = tasks[index];
+            
+            // Populate fields
+            document.getElementById('editDate').value = task.date;
+            document.getElementById('editTaskId').value = task.taskId;
+            document.getElementById('editCid').value = task.cid;
+            document.getElementById('editCount').value = task.count;
+            
+            // Select buttons
+            resetModalSelections('edit');
+            document.querySelectorAll('.btn-type').forEach(btn => 
+                btn.style.background = btn.textContent === task.type ? '#4CAF50' : '#2196F3'
+            );
+            document.querySelectorAll('.btn-outcome').forEach(btn => 
+                btn.style.background = btn.textContent === task.outcome ? '#4CAF50' : '#4CAF50'
+            );
+            
+            document.getElementById('editSelectedType').value = task.type;
+            document.getElementById('editSelectedOutcome').value = task.outcome;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        
+        function hideEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editIndex = null;
+        }
+
+        // ===== TYPE/OUTCOME SELECTION ===== 
+        function selectType(type) {
+            document.getElementById('selectedType').value = type;
+            document.querySelectorAll('.btn-type').forEach(btn => 
+                btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
+            );
+        }
+        
+        function selectOutcome(outcome) {
+            document.getElementById('selectedOutcome').value = outcome;
+            document.querySelectorAll('.btn-outcome').forEach(btn => 
+                btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
+            );
+        }
+        
+        function editSelectType(type) {
+            document.getElementById('editSelectedType').value = type;
+            document.querySelectorAll('.btn-type').forEach(btn => 
+                btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
+            );
+        }
+        
+        function editSelectOutcome(outcome) {
+            document.getElementById('editSelectedOutcome').value = outcome;
+            document.querySelectorAll('.btn-outcome').forEach(btn => 
+                btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
+            );
+        }
+
+        // ===== RESET MODAL SELECTIONS ===== 
+        function resetModalSelections(mode) {
+            if (mode === 'add') {
+                document.getElementById('selectedType').value = '';
+                document.getElementById('selectedOutcome').value = '';
+                document.querySelectorAll('.btn-type').forEach(btn => btn.style.background = '#2196F3');
+                document.querySelectorAll('.btn-outcome').forEach(btn => btn.style.background = '#4CAF50');
+            } else if (mode === 'edit') {
+                document.getElementById('editSelectedType').value = '';
+                document.getElementById('editSelectedOutcome').value = '';
+            }
+        }
+
+        // ===== SAVE NEW TASK ===== 
+        function saveNewTask() {
+            if (!document.getElementById('selectedType').value || !document.getElementById('selectedOutcome').value) {
+                showToast('❗ Select Type and Outcome!');
+                return;
+            }
+            
+            const count = parseInt(document.getElementById('newCount').value);
+            const requiredCount = OUTCOME_RULES[document.getElementById('selectedOutcome').value];
+            
+            // === BAV OVERRIDE: COUNT MUST BE 1 ===
+            if (document.getElementById('selectedType').value === 'BAV') {
+                if (count !== 1) {
+                    showToast('❗ BAV tasks must have count = 1!');
+                    return;
+                }
+            } else {
+                // === OUTCOME-BASED VALIDATION FOR OTHER TYPES ===
+                if (count !== requiredCount) {
+                    showToast(`❗ ${document.getElementById('selectedOutcome').value} requires count = ${requiredCount}!`);
+                    return;
+                }
+            }
+            
+            const newTask = {
+                date: document.getElementById('newDate').value,
+                taskId: document.getElementById('newTaskId').value,
+                cid: document.getElementById('newCid').value,
+                type: document.getElementById('selectedType').value,
+                outcome: document.getElementById('selectedOutcome').value,
+                count: document.getElementById('selectedType').value === 'BAV' ? 1 : count
+            };
+            
+            tasks.push(newTask);
+            saveData();
+            renderTable();
+            updateSummary();
+            hideAddModal();
+            showToast('✅ Task added successfully!');
+        }
+
+        // ===== SAVE EDITED TASK ===== 
+        function saveEditTask() {
+            if (!document.getElementById('editSelectedType').value || !document.getElementById('editSelectedOutcome').value) {
+                showToast('❗ Select Type and Outcome!');
+                return;
+            }
+            
+            const count = parseInt(document.getElementById('editCount').value);
+            const requiredCount = OUTCOME_RULES[document.getElementById('editSelectedOutcome').value];
+            
+            // === BAV OVERRIDE: COUNT MUST BE 1 ===
+            if (document.getElementById('editSelectedType').value === 'BAV') {
+                if (count !== 1) {
+                    showToast('❗ BAV tasks must have count = 1!');
+                    return;
+                }
+            } else {
+                // === OUTCOME-BASED VALIDATION FOR OTHER TYPES ===
+                if (count !== requiredCount) {
+                    showToast(`❗ ${document.getElementById('editSelectedOutcome').value} requires count = ${requiredCount}!`);
+                    return;
+                }
+            }
+            
+            tasks[editIndex] = {
+                date: document.getElementById('editDate').value,
+                taskId: document.getElementById('editTaskId').value,
+                cid: document.getElementById('editCid').value,
+                type: document.getElementById('editSelectedType').value,
+                outcome: document.getElementById('editSelectedOutcome').value,
+                count: document.getElementById('editSelectedType').value === 'BAV' ? 1 : count
+            };
+            
+            saveData();
+            renderTable();
+            updateSummary();
+            hideEditModal();
+            showToast('✅ Task updated successfully!');
+        }
+
+        // ===== RENDER TABLE ===== 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            
             tasks.forEach((task, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><input type="checkbox" class="row-checkbox" data-index="${index}"></td>
-                    <td class="row-num">${index + 1}</td>
+                    <td>${task.date}</td>
                     <td>${task.taskId}</td>
                     <td>${task.cid}</td>
-                    <td><span class="type-badge type-${task.taskType.toLowerCase()}">${task.taskType}</span></td>
-                    <td><span class="outcome-badge badge-${task.outcome.toLowerCase().replace(' ', '')}">${task.outcome}</span></td>
-                    <td><span class="count-badge count-${task.count === OUTCOME_COUNT[task.outcome] ? 2 : 1}">${task.count}</span></td>
+                    <td>${task.type}</td>
+                    <td>${task.outcome}</td>
+                    <td>${task.count}</td>
                     <td>
-                        <select class="outcome-select" data-index="${index}">
-                            ${Object.keys(OUTCOME_COUNT).map(outcome => 
-                                `<option value="${outcome}" ${task.outcome === outcome ? 'selected' : ''}>${outcome}</option>`
-                            ).join('')}
-                        </select>
+                        <button class="btn btn-edit" onclick="showEditModal(${index})">✏️ Edit</button>
+                        <button class="btn btn-delete" onclick="deleteTask(${index})">🗑️ Delete</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // ── Summary Cards ──
-        function updateSummaryCards() {
-            const summaryBar = document.getElementById('summaryBar');
-            const stats = { total: tasks.length, RFD: 0, Verify: 0, RFI: 0, Escalate: 0, Transfer: 0, Snooze: 0 };
-            
-            tasks.forEach(task => {
-                stats[task.outcome]++;
-            });
-
-            summaryBar.innerHTML = `
-                <div class="summary-card card-total">
-                    <div class="label">Total Tasks</div>
-                    <div class="value">${stats.total}</div>
-                </div>
-                <div class="summary-card card-rfd">
-                    <div class="label">RFD</div>
-                    <div class="value">${stats.RFD}</div>
-                </div>
-                <div class="summary-card card-verify">
-                    <div class="label">Verify</div>
-                    <div class="value">${stats.Verify}</div>
-                </div>
-                <div class="summary-card card-rfi">
-                    <div class="label">RFI</div>
-                    <div class="value">${stats.RFI}</div>
-                </div>
-                <div class="summary-card card-escalate">
-                    <div class="label">Escalate</div>
-                    <div class="value">${stats.Escalate}</div>
-                </div>
-                <div class="summary-card card-transfer">
-                    <div class="label">Transfer</div>
-                    <div class="value">${stats.Transfer}</div>
-                </div>
-                <div class="summary-card card-snooze">
-                    <div class="label">Snooze</div>
-                    <div class="value">${stats.Snooze}</div>
-                </div>
-            `;
+        // ===== DELETE TASK ===== 
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            saveData();
+            renderTable();
+            updateSummary();
+            showToast('🗑️ Task deleted');
         }
 
-        // ── Event Listeners ──
-        function attachEventListeners() {
-            document.querySelectorAll('.outcome-select').forEach(select => {
-                select.addEventListener('change', (e) => {
-                    const index = e.target.dataset.index;
-                    tasks[index].outcome = e.target.value;
-                    tasks[index].count = OUTCOME_COUNT[e.target.value];
-                    saveTasks();
-                    renderTable();
-                    updateSummaryCards();
-                    showToast('Outcome updated!');
-                });
-            });
-
-            document.querySelectorAll('.row-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
-                    updateBulkSection();
-                });
-            });
+        // ===== SUMMARY UPDATES ===== 
+        function updateSummary() {
+            // === TOTAL COUNT ===
+            const totalCount = tasks.reduce((sum, task) => sum + task.count, 0);
+            document.getElementById('totalTasks').textContent = totalCount;
         }
 
-        // ── Data Operations ──
-        function saveTasks() {
+        // ===== PERSISTENCE ===== 
+        function saveData() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
-        function addNewRow() {
-            const newTask = {
-                taskId: `TASK-${Date.now()}`,
-                cid: `CID-${Date.now()}`,
-                taskType: 'BAV',
-                outcome: 'RFD',
-                count: OUTCOME_COUNT['RFD']
-            };
-            tasks.push(newTask);
-            saveTasks();
-            renderTable();
-            updateSummaryCards();
-            showToast('New task added!');
-        }
-
-        function saveEdit() {
-            const index = document.getElementById('editIndex').value;
-            tasks[index] = {
-                taskId: document.getElementById('editTaskId').value,
-                cid: document.getElementById('editCid').value,
-                taskType: document.getElementById('editTaskType').value,
-                outcome: document.getElementById('editOutcome').value,
-                count: OUTCOME_COUNT[document.getElementById('editOutcome').value]
-            };
-            saveTasks();
-            renderTable();
-            updateSummaryCards();
-            closeEditModal();
-            showToast('Task updated!');
-        }
-
-        function editTask(index) {
-            const task = tasks[index];
-            document.getElementById('editIndex').value = index;
-            document.getElementById('editTaskId').value = task.taskId;
-            document.getElementById('editCid').value = task.cid;
-            document.getElementById('editTaskType').value = task.taskType;
-            document.getElementById('editOutcome').value = task.outcome;
-            document.getElementById('editCount').value = task.count;
-            document.getElementById('editModal').classList.add('active');
-        }
-
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            saveTasks();
-            renderTable();
-            updateSummaryCards();
-            showToast('Task deleted!');
-        }
-
-        // ── Utility Functions ──
+        // ===== TOAST NOTIFICATION ===== 
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('filterType').value = '';
-            document.getElementById('filterOutcome').value = '';
-            renderTable();
-        }
-
-        function exportCSV() {
-            const csvContent = "Task ID,CID,Task Type,Outcome,Count\n" + 
-                tasks.map(t => `${t.taskId},${t.cid},${t.taskType},${t.outcome},${t.count}`).join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'task_export.csv';
-            a.click();
-            showToast('CSV exported!');
-        }
-
-        function showResetModal() {
-            document.getElementById('confirmModal').classList.add('active');
-            document.getElementById('modalTitle').textContent = 'Confirm Reset';
-            document.getElementById('modalMessage').textContent = 'Resetting will clear all task data. Continue?';
-        }
-
-        function confirmAction() {
-            localStorage.removeItem('tasks');
-            tasks = [];
-            renderTable();
-            updateSummaryCards();
-            closeModal();
-            showToast('All data reset!');
-        }
-
-        function closeModal() {
-            document.getElementById('confirmModal').classList.remove('active');
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-        }
-
-        // ── Sorting & Bulk Actions ──
-        function sortTable(column) {
-            // Sorting logic here...
-        }
-
-        function toggleSelectAll() {
-            // Bulk selection logic here...
-        }
-
-        function applyBulkUpdate() {
-            // Bulk update logic here...
-        }
-
-        function updateBulkSection() {
-            // Update selected count...
-        }
-
-        function saveAllChanges() {
-            saveTasks();
-            showToast('All changes saved!');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2000);
         }
     </script>
 </body>
