@@ -215,6 +215,7 @@
         }
         function hideAddModal() {
             document.getElementById('addModal').style.display = 'none';
+            resetModalSelections();
         }
 
         // ===== TYPE/OUTCOME SELECTION ===== 
@@ -224,6 +225,7 @@
         function selectType(type) {
             selectedType = type;
             document.getElementById('selectedType').value = type;
+            // Highlight selected button
             document.querySelectorAll('.btn-type').forEach(btn => 
                 btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
             );
@@ -232,9 +234,20 @@
         function selectOutcome(outcome) {
             selectedOutcome = outcome;
             document.getElementById('selectedOutcome').value = outcome;
+            // Highlight selected button
             document.querySelectorAll('.btn-outcome').forEach(btn => 
                 btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
             );
+        }
+
+        // ===== RESET MODAL SELECTIONS ===== 
+        function resetModalSelections() {
+            selectedType = null;
+            selectedOutcome = null;
+            document.getElementById('selectedType').value = '';
+            document.getElementById('selectedOutcome').value = '';
+            document.querySelectorAll('.btn-type').forEach(btn => btn.style.background = '#2196F3');
+            document.querySelectorAll('.btn-outcome').forEach(btn => btn.style.background = '#4CAF50');
         }
 
         // ===== SAVE NEW TASK ===== 
@@ -300,39 +313,87 @@
 
         // ===== SUMMARY CARDS ===== 
         function updateSummary() {
-            const stats = { total: tasks.length, RFD: 0, Verify: 0, RFI: 0, Escalate: 0, Transfer: 0, Snooze: 0 };
-            tasks.forEach(t => stats[t.outcome]++);
-            
-            document.getElementById('summaryBar').innerHTML = `
+            // Outcome stats
+            const outcomeStats = { 
+                total: tasks.length, 
+                RFD: 0, 
+                Verify: 0, 
+                RFI: 0, 
+                Escalate: 0, 
+                Transfer: 0, 
+                Snooze: 0 
+            };
+            tasks.forEach(t => outcomeStats[t.outcome]++);
+
+            // Task type stats
+            const typeStats = {
+                BAV: 0,
+                BIV: 0,
+                BOV: 0,
+                LOA: 0,
+                LRV: 0,
+                IDV: 0
+            };
+            tasks.forEach(t => typeStats[t.type]++);
+
+            // Generate HTML for summary cards
+            let html = `
                 <div class="summary-card">
                     <div class="label">Total Tasks</div>
-                    <div class="value">${stats.total}</div>
+                    <div class="value">${outcomeStats.total}</div>
                 </div>
                 <div class="summary-card">
                     <div class="label">RFD</div>
-                    <div class="value">${stats.RFD}</div>
+                    <div class="value">${outcomeStats.RFD}</div>
                 </div>
                 <div class="summary-card">
                     <div class="label">Verify</div>
-                    <div class="value">${stats.Verify}</div>
+                    <div class="value">${outcomeStats.Verify}</div>
                 </div>
                 <div class="summary-card">
                     <div class="label">RFI</div>
-                    <div class="value">${stats.RFI}</div>
+                    <div class="value">${outcomeStats.RFI}</div>
                 </div>
                 <div class="summary-card">
                     <div class="label">Escalate</div>
-                    <div class="value">${stats.Escalate}</div>
+                    <div class="value">${outcomeStats.Escalate}</div>
                 </div>
                 <div class="summary-card">
                     <div class="label">Transfer</div>
-                    <div class="value">${stats.Transfer}</div>
+                    <div class="value">${outcomeStats.Transfer}</div>
                 </div>
                 <div class="summary-card">
                     <div class="label">Snooze</div>
-                    <div class="value">${stats.Snooze}</div>
+                    <div class="value">${outcomeStats.Snooze}</div>
+                </div>
+                <!-- Task Type Counts -->
+                <div class="summary-card">
+                    <div class="label">BAV</div>
+                    <div class="value">${typeStats.BAV}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">BIV</div>
+                    <div class="value">${typeStats.BIV}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">BOV</div>
+                    <div class="value">${typeStats.BOV}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">LOA</div>
+                    <div class="value">${typeStats.LOA}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">LRV</div>
+                    <div class="value">${typeStats.LRV}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">IDV</div>
+                    <div class="value">${typeStats.IDV}</div>
                 </div>
             `;
+            
+            document.getElementById('summaryBar').innerHTML = html;
         }
 
         // ===== PERSISTENCE ===== 
