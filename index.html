@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual Task Tracker</title>
+    <title>Manual Task Tracker (Editable)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
@@ -22,22 +22,33 @@
         .header h1 { font-size: 24px; }
         .header-info { display: flex; gap: 20px; font-size: 14px; margin-top: 10px; }
         
-        /* Summary Cards */
-        .summary-bar { 
+        /* Summary Sections */
+        .summary-section { margin-bottom: 20px; }
+        .summary-title { 
+            background: #fff; 
+            padding: 10px 15px; 
+            border-radius: 8px 8px 0 0; 
+            font-weight: bold; 
+            color: #1a237e; 
+        }
+        .summary-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
             gap: 15px; 
-            margin-bottom: 20px; 
+            background: #fff; 
+            padding: 15px; 
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .summary-card { 
-            background: white; 
+            text-align: center; 
             padding: 15px; 
             border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            text-align: center; 
+            background: #f8f9fa; 
+            border: 1px solid #e9ecef;
         }
         .summary-card .label { color: #666; font-size: 14px; }
-        .summary-card .value { font-size: 28px; font-weight: bold; margin-top: 5px; }
+        .summary-card .value { font-size: 28px; font-weight: bold; margin-top: 5px; color: #1a237e; }
         
         /* Table */
         .table-container { 
@@ -45,6 +56,7 @@
             border-radius: 10px; 
             overflow: hidden; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            margin-bottom: 20px;
         }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
@@ -63,9 +75,10 @@
         .btn-type { background: #2196f3; color: white; }
         .btn-outcome { background: #4caf50; color: white; }
         .btn-delete { background: #ff9800; color: white; }
+        .btn-edit { background: #009688; color: white; }
         .btn-add { background: #673ab7; color: white; margin-top: 15px; }
         
-        /* Modal */
+        /* Modals */
         .modal-overlay { 
             display: none; 
             position: fixed; 
@@ -124,8 +137,26 @@
             </div>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="summary-bar" id="summaryBar"></div>
+        <!-- Summary Sections -->
+        <div class="summary-section">
+            <div class="summary-title">📊 Overall Stats</div>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="label">TOTAL TASKS</div>
+                    <div class="value" id="totalTasks">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-title">📈 Outcome Breakdown</div>
+            <div class="summary-grid" id="outcomeSummary"></div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-title">📦 Task Type Breakdown</div>
+            <div class="summary-grid" id="typeSummary"></div>
+        </div>
 
         <!-- Task Table -->
         <div class="table-container">
@@ -144,7 +175,7 @@
             </table>
         </div>
 
-        <!-- Add New Task Button -->
+        <!-- Add/Edit Task Buttons -->
         <button class="btn btn-add" onclick="showAddModal()">➕ Add New Task</button>
 
         <!-- Add Task Modal -->
@@ -190,6 +221,50 @@
             </div>
         </div>
 
+        <!-- Edit Task Modal -->
+        <div class="modal-overlay" id="editModal">
+            <div class="modal">
+                <h2>📝 Edit Task</h2>
+                <input type="hidden" id="editIndex">
+                
+                <label>Task ID:</label>
+                <input type="text" id="editTaskId" required>
+                
+                <label>CID:</label>
+                <input type="text" id="editCid" required>
+                
+                <label>Type:</label>
+                <div class="type-buttons">
+                    <button class="btn btn-type" onclick="editSelectType('BAV')">BAV</button>
+                    <button class="btn btn-type" onclick="editSelectType('BIV')">BIV</button>
+                    <button class="btn btn-type" onclick="editSelectType('BOV')">BOV</button>
+                    <button class="btn btn-type" onclick="editSelectType('LOA')">LOA</button>
+                    <button class="btn btn-type" onclick="editSelectType('LRV')">LRV</button>
+                    <button class="btn btn-type" onclick="editSelectType('IDV')">IDV</button>
+                </div>
+                <input type="hidden" id="editSelectedType" required>
+                
+                <label>Outcome:</label>
+                <div class="outcome-buttons">
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('RFD')">RFD</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Verify')">Verify</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('RFI')">RFI</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Escalate')">Escalate</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Transfer')">Transfer</button>
+                    <button class="btn btn-outcome" onclick="editSelectOutcome('Snooze')">Snooze</button>
+                </div>
+                <input type="hidden" id="editSelectedOutcome" required>
+                
+                <label>Count:</label>
+                <input type="number" id="editCount" min="1" required>
+                
+                <div class="modal-actions">
+                    <button class="btn" onclick="hideEditModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveEditTask()">Save</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Toast -->
         <div class="toast" id="toast"></div>
     </div>
@@ -210,66 +285,109 @@
         });
 
         // ===== MODAL HANDLERS ===== 
+        let editIndex = null;
+        
         function showAddModal() {
             document.getElementById('addModal').style.display = 'flex';
+            resetModalSelections('add');
         }
+        
         function hideAddModal() {
             document.getElementById('addModal').style.display = 'none';
-            resetModalSelections();
+            resetModalSelections('add');
+        }
+        
+        function showEditModal(index) {
+            editIndex = index;
+            const task = tasks[index];
+            
+            // Populate fields
+            document.getElementById('editTaskId').value = task.taskId;
+            document.getElementById('editCid').value = task.cid;
+            document.getElementById('editCount').value = task.count;
+            
+            // Select buttons
+            resetModalSelections('edit');
+            document.querySelectorAll('.btn-type').forEach(btn => 
+                btn.style.background = btn.textContent === task.type ? '#4CAF50' : '#2196F3'
+            );
+            document.querySelectorAll('.btn-outcome').forEach(btn => 
+                btn.style.background = btn.textContent === task.outcome ? '#4CAF50' : '#4CAF50'
+            );
+            
+            document.getElementById('editSelectedType').value = task.type;
+            document.getElementById('editSelectedOutcome').value = task.outcome;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        
+        function hideEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editIndex = null;
         }
 
         // ===== TYPE/OUTCOME SELECTION ===== 
-        let selectedType = null;
-        let selectedOutcome = null;
-        
         function selectType(type) {
-            selectedType = type;
             document.getElementById('selectedType').value = type;
-            // Highlight selected button
             document.querySelectorAll('.btn-type').forEach(btn => 
                 btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
             );
         }
         
         function selectOutcome(outcome) {
-            selectedOutcome = outcome;
             document.getElementById('selectedOutcome').value = outcome;
-            // Highlight selected button
+            document.querySelectorAll('.btn-outcome').forEach(btn => 
+                btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
+            );
+        }
+        
+        function editSelectType(type) {
+            document.getElementById('editSelectedType').value = type;
+            document.querySelectorAll('.btn-type').forEach(btn => 
+                btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
+            );
+        }
+        
+        function editSelectOutcome(outcome) {
+            document.getElementById('editSelectedOutcome').value = outcome;
             document.querySelectorAll('.btn-outcome').forEach(btn => 
                 btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
             );
         }
 
         // ===== RESET MODAL SELECTIONS ===== 
-        function resetModalSelections() {
-            selectedType = null;
-            selectedOutcome = null;
-            document.getElementById('selectedType').value = '';
-            document.getElementById('selectedOutcome').value = '';
-            document.querySelectorAll('.btn-type').forEach(btn => btn.style.background = '#2196F3');
-            document.querySelectorAll('.btn-outcome').forEach(btn => btn.style.background = '#4CAF50');
+        function resetModalSelections(mode) {
+            if (mode === 'add') {
+                document.getElementById('selectedType').value = '';
+                document.getElementById('selectedOutcome').value = '';
+                document.querySelectorAll('.btn-type').forEach(btn => btn.style.background = '#2196F3');
+                document.querySelectorAll('.btn-outcome').forEach(btn => btn.style.background = '#4CAF50');
+            } else if (mode === 'edit') {
+                document.getElementById('editSelectedType').value = '';
+                document.getElementById('editSelectedOutcome').value = '';
+            }
         }
 
         // ===== SAVE NEW TASK ===== 
         function saveNewTask() {
-            if (!selectedType || !selectedOutcome) {
+            if (!document.getElementById('selectedType').value || !document.getElementById('selectedOutcome').value) {
                 showToast('❗ Select Type and Outcome!');
                 return;
             }
             
             const count = parseInt(document.getElementById('newCount').value);
-            const requiredCount = OUTCOME_RULES[selectedOutcome];
+            const requiredCount = OUTCOME_RULES[document.getElementById('selectedOutcome').value];
             
             if (count !== requiredCount) {
-                showToast(`❗ ${selectedOutcome} requires count = ${requiredCount}!`);
+                showToast(`❗ ${document.getElementById('selectedOutcome').value} requires count = ${requiredCount}!`);
                 return;
             }
             
             const newTask = {
                 taskId: document.getElementById('newTaskId').value,
                 cid: document.getElementById('newCid').value,
-                type: selectedType,
-                outcome: selectedOutcome,
+                type: document.getElementById('selectedType').value,
+                outcome: document.getElementById('selectedOutcome').value,
                 count: count
             };
             
@@ -279,6 +397,36 @@
             updateSummary();
             hideAddModal();
             showToast('✅ Task added successfully!');
+        }
+
+        // ===== SAVE EDITED TASK ===== 
+        function saveEditTask() {
+            if (!document.getElementById('editSelectedType').value || !document.getElementById('editSelectedOutcome').value) {
+                showToast('❗ Select Type and Outcome!');
+                return;
+            }
+            
+            const count = parseInt(document.getElementById('editCount').value);
+            const requiredCount = OUTCOME_RULES[document.getElementById('editSelectedOutcome').value];
+            
+            if (count !== requiredCount) {
+                showToast(`❗ ${document.getElementById('editSelectedOutcome').value} requires count = ${requiredCount}!`);
+                return;
+            }
+            
+            tasks[editIndex] = {
+                taskId: document.getElementById('editTaskId').value,
+                cid: document.getElementById('editCid').value,
+                type: document.getElementById('editSelectedType').value,
+                outcome: document.getElementById('editSelectedOutcome').value,
+                count: count
+            };
+            
+            saveData();
+            renderTable();
+            updateSummary();
+            hideEditModal();
+            showToast('✅ Task updated successfully!');
         }
 
         // ===== RENDER TABLE ===== 
@@ -295,6 +443,7 @@
                     <td>${task.outcome}</td>
                     <td>${task.count}</td>
                     <td>
+                        <button class="btn btn-edit" onclick="showEditModal(${index})">✏️ Edit</button>
                         <button class="btn btn-delete" onclick="deleteTask(${index})">🗑️ Delete</button>
                     </td>
                 `;
@@ -311,11 +460,13 @@
             showToast('🗑️ Task deleted');
         }
 
-        // ===== SUMMARY CARDS ===== 
+        // ===== SUMMARY UPDATES ===== 
         function updateSummary() {
-            // Outcome stats
+            // Total Tasks
+            document.getElementById('totalTasks').textContent = tasks.length;
+
+            // Outcome Breakdown
             const outcomeStats = { 
-                total: tasks.length, 
                 RFD: 0, 
                 Verify: 0, 
                 RFI: 0, 
@@ -324,8 +475,18 @@
                 Snooze: 0 
             };
             tasks.forEach(t => outcomeStats[t.outcome]++);
+            let outcomeHTML = '';
+            for (const [key, value] of Object.entries(outcomeStats)) {
+                outcomeHTML += `
+                    <div class="summary-card">
+                        <div class="label">${key}</div>
+                        <div class="value">${value}</div>
+                    </div>
+                `;
+            }
+            document.getElementById('outcomeSummary').innerHTML = outcomeHTML;
 
-            // Task type stats
+            // Task Type Breakdown
             const typeStats = {
                 BAV: 0,
                 BIV: 0,
@@ -335,65 +496,16 @@
                 IDV: 0
             };
             tasks.forEach(t => typeStats[t.type]++);
-
-            // Generate HTML for summary cards
-            let html = `
-                <div class="summary-card">
-                    <div class="label">Total Tasks</div>
-                    <div class="value">${outcomeStats.total}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">RFD</div>
-                    <div class="value">${outcomeStats.RFD}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">Verify</div>
-                    <div class="value">${outcomeStats.Verify}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">RFI</div>
-                    <div class="value">${outcomeStats.RFI}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">Escalate</div>
-                    <div class="value">${outcomeStats.Escalate}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">Transfer</div>
-                    <div class="value">${outcomeStats.Transfer}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">Snooze</div>
-                    <div class="value">${outcomeStats.Snooze}</div>
-                </div>
-                <!-- Task Type Counts -->
-                <div class="summary-card">
-                    <div class="label">BAV</div>
-                    <div class="value">${typeStats.BAV}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">BIV</div>
-                    <div class="value">${typeStats.BIV}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">BOV</div>
-                    <div class="value">${typeStats.BOV}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">LOA</div>
-                    <div class="value">${typeStats.LOA}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">LRV</div>
-                    <div class="value">${typeStats.LRV}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">IDV</div>
-                    <div class="value">${typeStats.IDV}</div>
-                </div>
-            `;
-            
-            document.getElementById('summaryBar').innerHTML = html;
+            let typeHTML = '';
+            for (const [key, value] of Object.entries(typeStats)) {
+                typeHTML += `
+                    <div class="summary-card">
+                        <div class="label">${key}</div>
+                        <div class="value">${value}</div>
+                    </div>
+                `;
+            }
+            document.getElementById('typeSummary').innerHTML = typeHTML;
         }
 
         // ===== PERSISTENCE ===== 
