@@ -1,506 +1,694 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Tracker with Edit Support</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        /* Header */
-        .header { 
-            background: linear-gradient(135deg, #1a237e, #283593); 
-            color: white; 
-            padding: 20px; 
-            border-radius: 10px 10px 0 0;
-            margin-bottom: 20px;
-        }
-        .header h1 { font-size: 24px; }
-        .header-info { display: flex; gap: 20px; font-size: 14px; margin-top: 10px; }
-        
-        /* Summary Sections */
-        .summary-section { margin-bottom: 20px; }
-        .summary-title { 
-            background: #fff; 
-            padding: 10px 15px; 
-            border-radius: 8px 8px 0 0; 
-            font-weight: bold; 
-            color: #1a237e; 
-        }
-        .summary-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 15px; 
-            background: #fff; 
-            padding: 15px; 
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .summary-card { 
-            text-align: center; 
-            padding: 15px; 
-            border-radius: 8px; 
-            background: #f8f9fa; 
-            border: 1px solid #e9ecef;
-        }
-        .summary-card .label { color: #666; font-size: 14px; }
-        .summary-card .value { font-size: 28px; font-weight: bold; margin-top: 5px; color: #1a237e; }
-        
-        /* Table */
-        .table-container { 
-            background: white; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            margin-bottom: 20px;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #e8eaf6; color: #1a237e; font-weight: bold; }
-        
-        /* Buttons */
-        .btn { 
-            padding: 6px 12px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            margin: 2px; 
-            transition: 0.2s; 
-        }
-        .btn-type { background: #2196f3; color: white; }
-        .btn-outcome { background: #4caf50; color: white; }
-        .btn-delete { background: #ff9800; color: white; }
-        .btn-edit { background: #009688; color: white; }
-        .btn-add { background: #673ab7; color: white; margin-top: 15px; }
-        
-        /* Modals */
-        .modal-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.5); 
-            z-index: 1000; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        .modal { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 10px; 
-            width: 500px; 
-            max-width: 90vw; 
-        }
-        .modal h2 { margin-bottom: 15px; color: #1a237e; }
-        .modal label { display: block; margin: 10px 0 5px; font-weight: bold; }
-        .modal input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .type-buttons, .outcome-buttons { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 5px; 
-            margin: 10px 0; 
-        }
-        .modal-actions { 
-            margin-top: 20px; 
-            display: flex; 
-            justify-content: flex-end; 
-            gap: 10px; 
-        }
-        
-        /* Toast */
-        .toast { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            background: #4caf50; 
-            color: white; 
-            padding: 12px 20px; 
-            border-radius: 4px; 
-            display: none; 
-            z-index: 2000;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Tracker — nindumat</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0ede8;
+    --surface: #faf9f7;
+    --surface2: #f0ede8;
+    --border: #dedad3;
+    --border2: #cac5bc;
+    --text: #1a1816;
+    --text2: #6b6560;
+    --text3: #9c9690;
+    --accent: #1a1816;
+    --accent-fg: #faf9f7;
+    --green: #2d6a4f;
+    --green-bg: #d8f3dc;
+    --blue: #1b4f72;
+    --blue-bg: #d6eaf8;
+    --amber: #7d4e00;
+    --amber-bg: #fef3cd;
+    --red: #7b241c;
+    --red-bg: #fadbd8;
+    --purple: #4a235a;
+    --purple-bg: #e8daef;
+    --teal: #0e6655;
+    --teal-bg: #d1f2eb;
+    --coral: #7b3f00;
+    --coral-bg: #fde8d8;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* LAYOUT */
+  .shell { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--accent);
+    color: var(--accent-fg);
+    padding: 28px 20px;
+    display: flex; flex-direction: column; gap: 32px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .sidebar-logo { font-family: 'DM Mono', monospace; font-size: 13px; opacity: 0.7; letter-spacing: 0.05em; }
+  .sidebar-title { font-size: 18px; font-weight: 600; line-height: 1.3; }
+  .sidebar-user { font-size: 12px; opacity: 0.55; font-family: 'DM Mono', monospace; }
+  .sidebar-date { font-size: 11px; opacity: 0.45; margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  .sidebar-stats { display: flex; flex-direction: column; gap: 14px; }
+  .stat-row { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val { font-size: 28px; font-weight: 600; }
+  .stat-lbl { font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat-divider { height: 0.5px; background: rgba(255,255,255,0.15); }
+
+  .sidebar-nav { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+  .nav-btn {
+    background: rgba(255,255,255,0.1); border: none; color: var(--accent-fg);
+    padding: 9px 12px; border-radius: var(--radius-sm); font-size: 12px;
+    font-family: 'Sora', sans-serif; font-weight: 500;
+    cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.2); }
+  .nav-btn.primary { background: rgba(255,255,255,0.92); color: var(--accent); }
+  .nav-btn.primary:hover { background: #fff; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 32px 36px; max-width: calc(100% - 220px); overflow-x: hidden; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 { font-size: 22px; font-weight: 600; }
+  .page-header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  /* METRIC STRIP */
+  .metric-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .metric-card .m-val { font-size: 30px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .metric-card .m-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+  .metric-card.today { border-left: 3px solid var(--accent); }
+
+  /* CHARTS */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
+  }
+  .chart-card h3 { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .chart-wrap { position: relative; height: 140px; }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-sel {
+    padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); font-size: 12px;
+    font-family: 'Sora', sans-serif; cursor: pointer; outline: none;
+  }
+  .filter-sel:focus { border-color: var(--accent); }
+  .toolbar-spacer { flex: 1; }
+  .toolbar-count { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .clear-link { font-size: 12px; color: var(--text2); background: none; border: none; cursor: pointer; text-decoration: underline; }
+  .export-btn {
+    padding: 7px 14px; border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text); border-radius: var(--radius-sm);
+    font-size: 12px; font-family: 'Sora', sans-serif; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: background 0.15s;
+  }
+  .export-btn:hover { background: var(--surface2); }
+
+  /* DAY GROUPS */
+  .day-group { margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); }
+  .day-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; background: var(--surface);
+    cursor: pointer; user-select: none;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  .day-header:hover { background: var(--surface2); }
+  .day-chevron { font-size: 10px; color: var(--text3); transition: transform 0.2s; }
+  .day-group.collapsed .day-chevron { transform: rotate(-90deg); }
+  .day-name { font-size: 13px; font-weight: 600; }
+  .today-tag { font-size: 10px; font-weight: 500; background: var(--accent); color: var(--accent-fg); padding: 2px 8px; border-radius: 100px; }
+  .day-meta { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .day-chip { font-size: 11px; color: var(--text2); background: var(--surface2); border: 1px solid var(--border); padding: 2px 9px; border-radius: 100px; font-family: 'DM Mono', monospace; }
+
+  .task-table-wrap { background: var(--surface); display: block; }
+  .day-group.collapsed .task-table-wrap { display: none; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--surface2); font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+    font-weight: 500; color: var(--text3); padding: 9px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 11px 14px; font-size: 13px; color: var(--text); }
+  .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  /* PILLS */
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .t-BAV  { background: var(--blue-bg);   color: var(--blue); }
+  .t-BIV  { background: var(--green-bg);  color: var(--green); }
+  .t-BOV  { background: var(--amber-bg);  color: var(--amber); }
+  .t-LOA  { background: var(--purple-bg); color: var(--purple); }
+  .t-LRV  { background: var(--teal-bg);   color: var(--teal); }
+  .t-IDV  { background: var(--coral-bg);  color: var(--coral); }
+  .o-RFD      { background: var(--blue-bg);   color: var(--blue); }
+  .o-Verify   { background: var(--green-bg);  color: var(--green); }
+  .o-RFI      { background: var(--purple-bg); color: var(--purple); }
+  .o-Escalate { background: var(--red-bg);    color: var(--red); }
+  .o-Transfer { background: var(--amber-bg);  color: var(--amber); }
+  .o-Snooze   { background: var(--surface2);  color: var(--text2); border: 1px solid var(--border); }
+
+  /* ROW ACTIONS */
+  .row-actions { display: flex; gap: 5px; opacity: 0; transition: opacity 0.15s; }
+  tbody tr:hover .row-actions { opacity: 1; }
+  .row-btn {
+    padding: 4px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text2); font-size: 11px;
+    cursor: pointer; font-family: 'Sora', sans-serif; transition: all 0.12s;
+  }
+  .row-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .row-btn.del:hover { background: var(--red-bg); color: var(--red); border-color: #f1948a; }
+
+  /* EMPTY */
+  .empty-wrap { padding: 60px 20px; text-align: center; color: var(--text3); font-size: 14px; }
+  .empty-wrap p { margin-top: 8px; font-size: 12px; }
+
+  /* MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(20,16,10,0.45); z-index: 100;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px; width: 460px; max-width: 96vw;
+    max-height: 92vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .modal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .modal-top h2 { font-size: 17px; font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 18px; color: var(--text3); cursor: pointer; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; color: var(--text3); margin-bottom: 6px; }
+  .field input[type="date"],
+  .field input[type="text"],
+  .field input[type="number"] {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px; font-family: 'Sora', sans-serif;
+    background: var(--surface); color: var(--text); outline: none; transition: border 0.15s;
+  }
+  .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,24,22,0.06); }
+
+  .pill-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pick-btn {
+    padding: 6px 13px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+    cursor: pointer; font-family: 'Sora', sans-serif;
+    background: var(--surface2); color: var(--text2);
+    transition: all 0.12s;
+  }
+  .pick-btn:hover { border-color: var(--accent); color: var(--text); }
+  .pick-btn.active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+  .err { font-size: 11px; color: var(--red); margin-top: 6px; display: none; }
+
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .btn-cancel {
+    padding: 9px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: none; font-size: 13px; font-family: 'Sora', sans-serif; color: var(--text2); cursor: pointer;
+  }
+  .btn-save {
+    padding: 9px 22px; border: none; border-radius: var(--radius-sm);
+    background: var(--accent); color: var(--accent-fg);
+    font-size: 13px; font-family: 'Sora', sans-serif; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: var(--accent-fg);
+    padding: 10px 22px; border-radius: 100px; font-size: 13px;
+    font-weight: 500; display: none; z-index: 300; white-space: nowrap;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    animation: fadeUp 0.2s ease;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%); } }
+
+  @media (max-width: 900px) {
+    .shell { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: static; flex-direction: row; flex-wrap: wrap; padding: 16px 20px; gap: 16px; }
+    .sidebar-nav { flex-direction: row; margin-top: 0; }
+    .main { max-width: 100%; padding: 20px; }
+    .metric-strip { grid-template-columns: repeat(3, 1fr); }
+    .chart-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .metric-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📅 Task Tracker</h1>
-            <div class="header-info">
-                <span>📅 Date: <strong id="today"></strong></span>
-                <span>👤 User: <strong>nindumat</strong></span>
-            </div>
-        </div>
 
-        <!-- Summary Sections -->
-        <div class="summary-section">
-            <div class="summary-title">📊 Total Count</div>
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <div class="label">TOTAL TASKS</div>
-                    <div class="value" id="totalTasks">0</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Task Table -->
-        <div class="table-container">
-            <table id="taskTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Task ID</th>
-                        <th>CID</th>
-                        <th>Type</th>
-                        <th>Outcome</th>
-                        <th>Count</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-
-        <!-- Add/Edit Task Buttons -->
-        <button class="btn btn-add" onclick="showAddModal()">➕ Add New Task</button>
-
-        <!-- Add Task Modal -->
-        <div class="modal-overlay" id="addModal">
-            <div class="modal">
-                <h2>📝 Add New Task</h2>
-                <label>Date:</label>
-                <input type="date" id="newDate" required>
-                
-                <label>Task ID:</label>
-                <input type="text" id="newTaskId" required>
-                
-                <label>CID:</label>
-                <input type="text" id="newCid" required>
-                
-                <label>Type:</label>
-                <div class="type-buttons">
-                    <button class="btn btn-type" onclick="selectType('BAV')">BAV</button>
-                    <button class="btn btn-type" onclick="selectType('BIV')">BIV</button>
-                    <button class="btn btn-type" onclick="selectType('BOV')">BOV</button>
-                    <button class="btn btn-type" onclick="selectType('LOA')">LOA</button>
-                    <button class="btn btn-type" onclick="selectType('LRV')">LRV</button>
-                    <button class="btn btn-type" onclick="selectType('IDV')">IDV</button>
-                </div>
-                <input type="hidden" id="selectedType" required>
-                
-                <label>Outcome:</label>
-                <div class="outcome-buttons">
-                    <button class="btn btn-outcome" onclick="selectOutcome('RFD')">RFD</button>
-                    <button class="btn btn-outcome" onclick="selectOutcome('Verify')">Verify</button>
-                    <button class="btn btn-outcome" onclick="selectOutcome('RFI')">RFI</button>
-                    <button class="btn btn-outcome" onclick="selectOutcome('Escalate')">Escalate</button>
-                    <button class="btn btn-outcome" onclick="selectOutcome('Transfer')">Transfer</button>
-                    <button class="btn btn-outcome" onclick="selectOutcome('Snooze')">Snooze</button>
-                </div>
-                <input type="hidden" id="selectedOutcome" required>
-                
-                <label>Count:</label>
-                <input type="number" id="newCount" min="1" required>
-                
-                <div class="modal-actions">
-                    <button class="btn" onclick="hideAddModal()">Cancel</button>
-                    <button class="btn btn-success" onclick="saveNewTask()">Save</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Task Modal -->
-        <div class="modal-overlay" id="editModal">
-            <div class="modal">
-                <h2>📝 Edit Task</h2>
-                <input type="hidden" id="editIndex">
-                <label>Date:</label>
-                <input type="date" id="editDate" required>
-                
-                <label>Task ID:</label>
-                <input type="text" id="editTaskId" required>
-                
-                <label>CID:</label>
-                <input type="text" id="editCid" required>
-                
-                <label>Type:</label>
-                <div class="type-buttons">
-                    <button class="btn btn-type" onclick="editSelectType('BAV')">BAV</button>
-                    <button class="btn btn-type" onclick="editSelectType('BIV')">BIV</button>
-                    <button class="btn btn-type" onclick="editSelectType('BOV')">BOV</button>
-                    <button class="btn btn-type" onclick="editSelectType('LOA')">LOA</button>
-                    <button class="btn btn-type" onclick="editSelectType('LRV')">LRV</button>
-                    <button class="btn btn-type" onclick="editSelectType('IDV')">IDV</button>
-                </div>
-                <input type="hidden" id="editSelectedType" required>
-                
-                <label>Outcome:</label>
-                <div class="outcome-buttons">
-                    <button class="btn btn-outcome" onclick="editSelectOutcome('RFD')">RFD</button>
-                    <button class="btn btn-outcome" onclick="editSelectOutcome('Verify')">Verify</button>
-                    <button class="btn btn-outcome" onclick="editSelectOutcome('RFI')">RFI</button>
-                    <button class="btn btn-outcome" onclick="editSelectOutcome('Escalate')">Escalate</button>
-                    <button class="btn btn-outcome" onclick="editSelectOutcome('Transfer')">Transfer</button>
-                    <button class="btn btn-outcome" onclick="editSelectOutcome('Snooze')">Snooze</button>
-                </div>
-                <input type="hidden" id="editSelectedOutcome" required>
-                
-                <label>Count:</label>
-                <input type="number" id="editCount" min="1" required>
-                
-                <div class="modal-actions">
-                    <button class="btn" onclick="hideEditModal()">Cancel</button>
-                    <button class="btn btn-success" onclick="saveEditTask()">Save</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast -->
-        <div class="toast" id="toast"></div>
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="sidebar-logo">TASK TRACKER</div>
+      <div class="sidebar-title" style="margin-top:10px;">Daily Work<br>Log</div>
+      <div class="sidebar-user" style="margin-top:12px;">nindumat</div>
+      <div class="sidebar-date" id="sideDate"></div>
     </div>
 
-    <script>
-        // ===== DATA MODEL ===== 
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        const OUTCOME_RULES = {
-            'RFD': 2, 
-            'Verify': 2, 
-            'RFI': 2,
-            'Escalate': 2, 
-            'Transfer': 1, 
-            'Snooze': 1
-        };
+    <div class="sidebar-stats">
+      <div class="stat-row">
+        <div class="stat-val" id="sTotalCount">0</div>
+        <div class="stat-lbl">Total count</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-row">
+        <div class="stat-val" id="sTodayCount">0</div>
+        <div class="stat-lbl">Today</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-row">
+        <div class="stat-val" id="sActiveDays">0</div>
+        <div class="stat-lbl">Active days</div>
+      </div>
+    </div>
 
-        // ===== INITIALIZE ===== 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('today').textContent = new Date().toLocaleDateString();
-            renderTable();
-            updateSummary();
-        });
+    <div class="sidebar-nav">
+      <button class="nav-btn primary" onclick="openModal(null)">+ Add task</button>
+      <button class="nav-btn" onclick="exportCSV()">↓ Export CSV</button>
+      <button class="nav-btn" onclick="exportXLSX()">↓ Export Excel</button>
+    </div>
+  </aside>
 
-        // ===== MODAL HANDLERS ===== 
-        let editIndex = null;
-        
-        function showAddModal() {
-            document.getElementById('addModal').style.display = 'flex';
-            resetModalSelections('add');
-            document.getElementById('newDate').valueAsDate = new Date();
-        }
-        
-        function hideAddModal() {
-            document.getElementById('addModal').style.display = 'none';
-            resetModalSelections('add');
-        }
-        
-        function showEditModal(index) {
-            editIndex = index;
-            const task = tasks[index];
-            
-            // Populate fields
-            document.getElementById('editDate').value = task.date;
-            document.getElementById('editTaskId').value = task.taskId;
-            document.getElementById('editCid').value = task.cid;
-            document.getElementById('editCount').value = task.count;
-            
-            // Select buttons
-            resetModalSelections('edit');
-            document.querySelectorAll('.btn-type').forEach(btn => 
-                btn.style.background = btn.textContent === task.type ? '#4CAF50' : '#2196F3'
-            );
-            document.querySelectorAll('.btn-outcome').forEach(btn => 
-                btn.style.background = btn.textContent === task.outcome ? '#4CAF50' : '#4CAF50'
-            );
-            
-            document.getElementById('editSelectedType').value = task.type;
-            document.getElementById('editSelectedOutcome').value = task.outcome;
-            
-            document.getElementById('editModal').style.display = 'flex';
-        }
-        
-        function hideEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-            editIndex = null;
-        }
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-header">
+      <h2>Task Log</h2>
+      <p id="mainSubtitle">All tasks grouped by date</p>
+    </div>
 
-        // ===== TYPE/OUTCOME SELECTION ===== 
-        function selectType(type) {
-            document.getElementById('selectedType').value = type;
-            document.querySelectorAll('.btn-type').forEach(btn => 
-                btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
-            );
-        }
-        
-        function selectOutcome(outcome) {
-            document.getElementById('selectedOutcome').value = outcome;
-            document.querySelectorAll('.btn-outcome').forEach(btn => 
-                btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
-            );
-        }
-        
-        function editSelectType(type) {
-            document.getElementById('editSelectedType').value = type;
-            document.querySelectorAll('.btn-type').forEach(btn => 
-                btn.style.background = btn.textContent === type ? '#4CAF50' : '#2196F3'
-            );
-        }
-        
-        function editSelectOutcome(outcome) {
-            document.getElementById('editSelectedOutcome').value = outcome;
-            document.querySelectorAll('.btn-outcome').forEach(btn => 
-                btn.style.background = btn.textContent === outcome ? '#4CAF50' : '#4CAF50'
-            );
-        }
+    <!-- METRICS -->
+    <div class="metric-strip">
+      <div class="metric-card today">
+        <div class="m-val" id="mToday">0</div>
+        <div class="m-lbl">Today's count</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-val" id="mTotal">0</div>
+        <div class="m-lbl">Total count</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-val" id="mDays">0</div>
+        <div class="m-lbl">Active days</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-val" id="mAvg">0</div>
+        <div class="m-lbl">Daily avg</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-val" id="mPeak">0</div>
+        <div class="m-lbl">Best day</div>
+      </div>
+    </div>
 
-        // ===== RESET MODAL SELECTIONS ===== 
-        function resetModalSelections(mode) {
-            if (mode === 'add') {
-                document.getElementById('selectedType').value = '';
-                document.getElementById('selectedOutcome').value = '';
-                document.querySelectorAll('.btn-type').forEach(btn => btn.style.background = '#2196F3');
-                document.querySelectorAll('.btn-outcome').forEach(btn => btn.style.background = '#4CAF50');
-            } else if (mode === 'edit') {
-                document.getElementById('editSelectedType').value = '';
-                document.getElementById('editSelectedOutcome').value = '';
-            }
-        }
+    <!-- CHARTS -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <h3>Count by type</h3>
+        <div class="chart-wrap"><canvas id="typeChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Count by outcome</h3>
+        <div class="chart-wrap"><canvas id="outcomeChart"></canvas></div>
+      </div>
+    </div>
 
-        // ===== SAVE NEW TASK ===== 
-        function saveNewTask() {
-            if (!document.getElementById('selectedType').value || !document.getElementById('selectedOutcome').value) {
-                showToast('❗ Select Type and Outcome!');
-                return;
-            }
-            
-            const count = parseInt(document.getElementById('newCount').value);
-            const requiredCount = OUTCOME_RULES[document.getElementById('selectedOutcome').value];
-            
-            // === BAV OVERRIDE: COUNT MUST BE 1 ===
-            if (document.getElementById('selectedType').value === 'BAV') {
-                if (count !== 1) {
-                    showToast('❗ BAV tasks must have count = 1!');
-                    return;
-                }
-            } else {
-                // === OUTCOME-BASED VALIDATION FOR OTHER TYPES ===
-                if (count !== requiredCount) {
-                    showToast(`❗ ${document.getElementById('selectedOutcome').value} requires count = ${requiredCount}!`);
-                    return;
-                }
-            }
-            
-            const newTask = {
-                date: document.getElementById('newDate').value,
-                taskId: document.getElementById('newTaskId').value,
-                cid: document.getElementById('newCid').value,
-                type: document.getElementById('selectedType').value,
-                outcome: document.getElementById('selectedOutcome').value,
-                count: document.getElementById('selectedType').value === 'BAV' ? 1 : count
-            };
-            
-            tasks.push(newTask);
-            saveData();
-            renderTable();
-            updateSummary();
-            hideAddModal();
-            showToast('✅ Task added successfully!');
-        }
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <select class="filter-sel" id="fType" onchange="render()">
+        <option value="">All types</option>
+        <option>BAV</option><option>BIV</option><option>BOV</option>
+        <option>LOA</option><option>LRV</option><option>IDV</option>
+      </select>
+      <select class="filter-sel" id="fOutcome" onchange="render()">
+        <option value="">All outcomes</option>
+        <option>RFD</option><option>Verify</option><option>RFI</option>
+        <option>Escalate</option><option>Transfer</option><option>Snooze</option>
+      </select>
+      <button class="clear-link" onclick="clearFilters()">Clear</button>
+      <div class="toolbar-spacer"></div>
+      <span class="toolbar-count" id="filterInfo"></span>
+      <button class="export-btn" onclick="exportCSV()">↓ CSV</button>
+      <button class="export-btn" onclick="exportXLSX()">↓ Excel</button>
+    </div>
 
-        // ===== SAVE EDITED TASK ===== 
-        function saveEditTask() {
-            if (!document.getElementById('editSelectedType').value || !document.getElementById('editSelectedOutcome').value) {
-                showToast('❗ Select Type and Outcome!');
-                return;
-            }
-            
-            const count = parseInt(document.getElementById('editCount').value);
-            const requiredCount = OUTCOME_RULES[document.getElementById('editSelectedOutcome').value];
-            
-            // === BAV OVERRIDE: COUNT MUST BE 1 ===
-            if (document.getElementById('editSelectedType').value === 'BAV') {
-                if (count !== 1) {
-                    showToast('❗ BAV tasks must have count = 1!');
-                    return;
-                }
-            } else {
-                // === OUTCOME-BASED VALIDATION FOR OTHER TYPES ===
-                if (count !== requiredCount) {
-                    showToast(`❗ ${document.getElementById('editSelectedOutcome').value} requires count = ${requiredCount}!`);
-                    return;
-                }
-            }
-            
-            tasks[editIndex] = {
-                date: document.getElementById('editDate').value,
-                taskId: document.getElementById('editTaskId').value,
-                cid: document.getElementById('editCid').value,
-                type: document.getElementById('editSelectedType').value,
-                outcome: document.getElementById('editSelectedOutcome').value,
-                count: document.getElementById('editSelectedType').value === 'BAV' ? 1 : count
-            };
-            
-            saveData();
-            renderTable();
-            updateSummary();
-            hideEditModal();
-            showToast('✅ Task updated successfully!');
-        }
+    <!-- TASK LIST -->
+    <div id="taskList"></div>
+  </main>
+</div>
 
-        // ===== RENDER TABLE ===== 
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            
-            tasks.forEach((task, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${task.date}</td>
-                    <td>${task.taskId}</td>
-                    <td>${task.cid}</td>
-                    <td>${task.type}</td>
-                    <td>${task.outcome}</td>
-                    <td>${task.count}</td>
-                    <td>
-                        <button class="btn btn-edit" onclick="showEditModal(${index})">✏️ Edit</button>
-                        <button class="btn btn-delete" onclick="deleteTask(${index})">🗑️ Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+<!-- ADD / EDIT MODAL -->
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal">
+    <div class="modal-top">
+      <h2 id="modalTitle">Add task</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
 
-        // ===== DELETE TASK ===== 
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            saveData();
-            renderTable();
-            updateSummary();
-            showToast('🗑️ Task deleted');
-        }
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="fDate">
+    </div>
+    <div class="field">
+      <label>Task ID</label>
+      <input type="text" id="fTaskId" placeholder="e.g. T-1234">
+    </div>
+    <div class="field">
+      <label>CID</label>
+      <input type="text" id="fCid" placeholder="Customer ID">
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <div class="pill-grid" id="typeBtns"></div>
+    </div>
+    <div class="field">
+      <label>Outcome</label>
+      <div class="pill-grid" id="outcomeBtns"></div>
+    </div>
+    <div class="field">
+      <label>Count</label>
+      <input type="number" id="fCount" min="1" value="1">
+      <div class="err" id="errMsg"></div>
+    </div>
 
-        // ===== SUMMARY UPDATES ===== 
-        function updateSummary() {
-            // === TOTAL COUNT ===
-            const totalCount = tasks.reduce((sum, task) => sum + task.count, 0);
-            document.getElementById('totalTasks').textContent = totalCount;
-        }
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Save task</button>
+    </div>
+  </div>
+</div>
 
-        // ===== PERSISTENCE ===== 
-        function saveData() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
+<div class="toast" id="toast"></div>
 
-        // ===== TOAST NOTIFICATION ===== 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 2000);
-        }
-    </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ── DATA ── */
+const TYPES    = ['BAV','BIV','BOV','LOA','LRV','IDV'];
+const OUTCOMES = ['RFD','Verify','RFI','Escalate','Transfer','Snooze'];
+const OC_REQ   = {RFD:2,Verify:2,RFI:2,Escalate:2,Transfer:1,Snooze:1};
+const KEY = 'tasks_nindumat_v2';
+
+let tasks = [];
+try { tasks = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) {}
+
+let selType = '', selOutcome = '', editIdx = null;
+let tChart = null, oChart = null;
+
+/* ── HELPERS ── */
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function fmtDate(d) {
+  const [y,m,day] = d.split('-').map(Number);
+  const dt = new Date(y,m-1,day);
+  return dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch(e){}
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(()=> el.style.display='none', 2200);
+}
+
+/* ── SIDEBAR DATE ── */
+const now = new Date();
+document.getElementById('sideDate').textContent =
+  now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+document.getElementById('mainSubtitle').textContent =
+  'All tasks · ' + now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+/* ── METRICS ── */
+function updateMetrics() {
+  const total = tasks.reduce((s,t)=>s+t.count,0);
+  const tday  = tasks.filter(t=>t.date===todayStr()).reduce((s,t)=>s+t.count,0);
+  const byDay = {};
+  tasks.forEach(t=>{ byDay[t.date]=(byDay[t.date]||0)+t.count; });
+  const days = Object.keys(byDay).length;
+  const avg  = days ? Math.round(total/days) : 0;
+  const peak = days ? Math.max(...Object.values(byDay)) : 0;
+  document.getElementById('sTotalCount').textContent = total;
+  document.getElementById('sTodayCount').textContent = tday;
+  document.getElementById('sActiveDays').textContent = days;
+  document.getElementById('mTotal').textContent = total;
+  document.getElementById('mToday').textContent = tday;
+  document.getElementById('mDays').textContent  = days;
+  document.getElementById('mAvg').textContent   = avg;
+  document.getElementById('mPeak').textContent  = peak;
+}
+
+/* ── CHARTS ── */
+const TYPE_COLORS    = ['#378ADD','#2d9c65','#e6a817','#9b59b6','#16a085','#d35400'];
+const OUTCOME_COLORS = ['#2980b9','#27ae60','#8e44ad','#c0392b','#f39c12','#95a5a6'];
+
+function updateCharts() {
+  const tc={}, oc={};
+  tasks.forEach(t=>{ tc[t.type]=(tc[t.type]||0)+t.count; oc[t.outcome]=(oc[t.outcome]||0)+t.count; });
+  const tlbls=Object.keys(tc), tdata=Object.values(tc);
+  const olbls=Object.keys(oc), odata=Object.values(oc);
+
+  function mkCfg(labels,data,colors) {
+    return {
+      type:'doughnut',
+      data:{labels,datasets:[{data,backgroundColor:colors.slice(0,data.length),borderWidth:1,borderColor:'#faf9f7',hoverOffset:3}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+        plugins:{legend:{position:'right',labels:{boxWidth:10,padding:8,font:{size:10,family:'Sora'}}}}}
+    };
+  }
+  if(tChart) tChart.destroy();
+  if(oChart) oChart.destroy();
+  if(tlbls.length) tChart = new Chart(document.getElementById('typeChart'),    mkCfg(tlbls,tdata,TYPE_COLORS));
+  if(olbls.length) oChart = new Chart(document.getElementById('outcomeChart'), mkCfg(olbls,odata,OUTCOME_COLORS));
+}
+
+/* ── RENDER TABLE ── */
+function getFiltered() {
+  const ft = document.getElementById('fType').value;
+  const fo = document.getElementById('fOutcome').value;
+  return tasks.map((t,i)=>({...t,_i:i})).filter(t=>(!ft||t.type===ft)&&(!fo||t.outcome===fo));
+}
+
+function render() {
+  updateMetrics();
+  updateCharts();
+
+  const filtered = getFiltered();
+  const fi = document.getElementById('filterInfo');
+  fi.textContent = filtered.length !== tasks.length ? `${filtered.length} of ${tasks.length} tasks` : '';
+
+  const grouped = {};
+  filtered.forEach(t=>{ if(!grouped[t.date]) grouped[t.date]=[]; grouped[t.date].push(t); });
+  const dates = Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+
+  const list = document.getElementById('taskList');
+  if(!dates.length){
+    list.innerHTML = `<div class="empty-wrap">No tasks yet.<p>Click "+ Add task" to log your first task.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = dates.map(date=>{
+    const group = grouped[date];
+    const dayCount = group.reduce((s,t)=>s+t.count,0);
+    const isToday  = date === todayStr();
+    const todayBadge = isToday ? `<span class="today-tag">Today</span>` : '';
+    const rows = group.map(t=>`
+      <tr>
+        <td class="mono">${t.taskId}</td>
+        <td class="mono">${t.cid}</td>
+        <td><span class="pill t-${t.type}">${t.type}</span></td>
+        <td><span class="pill o-${t.outcome}">${t.outcome}</span></td>
+        <td class="mono" style="font-weight:600">${t.count}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-btn" onclick="openModal(${t._i})">Edit</button>
+            <button class="row-btn del" onclick="delTask(${t._i})">Delete</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    return `<div class="day-group" id="dg-${date}">
+      <div class="day-header" onclick="toggleDay('${date}')">
+        <span class="day-chevron">▼</span>
+        <span class="day-name">${fmtDate(date)}</span>
+        ${todayBadge}
+        <div class="day-meta">
+          <span class="day-chip">${group.length} task${group.length!==1?'s':''}</span>
+          <span class="day-chip">Count: ${dayCount}</span>
+        </div>
+      </div>
+      <div class="task-table-wrap">
+        <table>
+          <thead><tr><th>Task ID</th><th>CID</th><th>Type</th><th>Outcome</th><th>Count</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDay(date) {
+  const el = document.getElementById('dg-'+date);
+  el.classList.toggle('collapsed');
+}
+
+function clearFilters() {
+  document.getElementById('fType').value = '';
+  document.getElementById('fOutcome').value = '';
+  render();
+}
+
+/* ── MODAL ── */
+function setupPickBtns() {
+  document.getElementById('typeBtns').innerHTML = TYPES.map(t=>
+    `<button class="pick-btn${selType===t?' active':''}" onclick="pickType('${t}')">${t}</button>`
+  ).join('');
+  document.getElementById('outcomeBtns').innerHTML = OUTCOMES.map(o=>
+    `<button class="pick-btn${selOutcome===o?' active':''}" onclick="pickOutcome('${o}')">${o}</button>`
+  ).join('');
+}
+
+function pickType(t)    { selType=t;    setupPickBtns(); }
+function pickOutcome(o) { selOutcome=o; setupPickBtns(); }
+
+function openModal(idx) {
+  editIdx = idx;
+  selType=''; selOutcome='';
+  document.getElementById('errMsg').style.display='none';
+  if(idx !== null) {
+    const t = tasks[idx];
+    document.getElementById('modalTitle').textContent = 'Edit task';
+    document.getElementById('fDate').value   = t.date;
+    document.getElementById('fTaskId').value = t.taskId;
+    document.getElementById('fCid').value    = t.cid;
+    document.getElementById('fCount').value  = t.count;
+    selType=t.type; selOutcome=t.outcome;
+  } else {
+    document.getElementById('modalTitle').textContent = 'Add task';
+    document.getElementById('fDate').value   = todayStr(); // auto-fill today
+    document.getElementById('fTaskId').value = '';
+    document.getElementById('fCid').value    = '';
+    document.getElementById('fCount').value  = 1;
+  }
+  setupPickBtns();
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('fTaskId').focus(),120);
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function bgClose(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function saveTask() {
+  const date   = document.getElementById('fDate').value;
+  const taskId = document.getElementById('fTaskId').value.trim();
+  const cid    = document.getElementById('fCid').value.trim();
+  const count  = parseInt(document.getElementById('fCount').value);
+  const err    = document.getElementById('errMsg');
+  err.style.display='none';
+
+  if(!date||!taskId||!cid){ err.textContent='Please fill in date, task ID and CID.'; err.style.display='block'; return; }
+  if(!selType)    { err.textContent='Please select a type.';    err.style.display='block'; return; }
+  if(!selOutcome) { err.textContent='Please select an outcome.'; err.style.display='block'; return; }
+  if(isNaN(count)||count<1){ err.textContent='Count must be at least 1.'; err.style.display='block'; return; }
+  const req = selType==='BAV' ? 1 : OC_REQ[selOutcome];
+  if(count!==req){
+    err.textContent = selType==='BAV' ? 'BAV tasks must have count = 1.' : `${selOutcome} requires count = ${req}.`;
+    err.style.display='block'; return;
+  }
+
+  const task = {date,taskId,cid,type:selType,outcome:selOutcome,count};
+  if(editIdx!==null){ tasks[editIdx]=task; } else { tasks.push(task); }
+  save(); render(); closeModal();
+  toast(editIdx!==null ? '✓ Task updated' : '✓ Task added');
+}
+
+function delTask(idx) {
+  if(!confirm('Delete this task?')) return;
+  tasks.splice(idx,1);
+  save(); render();
+  toast('Task deleted');
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV() {
+  if(!tasks.length){ toast('No tasks to export'); return; }
+  const headers = ['Date','Task ID','CID','Type','Outcome','Count'];
+  const rows = tasks.map(t=>[t.date,t.taskId,t.cid,t.type,t.outcome,t.count].map(v=>`"${v}"`).join(','));
+  const csv = [headers.join(','),...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download=`tasks_${todayStr()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ CSV exported');
+}
+
+/* ── EXPORT EXCEL (xlsx via SheetJS) ── */
+function exportXLSX() {
+  if(!tasks.length){ toast('No tasks to export'); return; }
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  script.onload = function() {
+    const ws_data = [
+      ['Date','Task ID','CID','Type','Outcome','Count'],
+      ...tasks.map(t=>[t.date,t.taskId,t.cid,t.type,t.outcome,t.count])
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    ws['!cols'] = [{wch:12},{wch:12},{wch:14},{wch:8},{wch:10},{wch:7}];
+    XLSX.utils.book_append_sheet(wb,'Tasks',ws);
+    XLSX.writeFile(wb, `tasks_${todayStr()}.xlsx`);
+    toast('✓ Excel exported');
+  };
+  if(window.XLSX) { script.onload(); } else { document.head.appendChild(script); }
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='n'){ e.preventDefault(); openModal(null); }
+});
+
+/* ── INIT ── */
+render();
+</script>
 </body>
 </html>
