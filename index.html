@@ -46,7 +46,6 @@
     padding: 0;
   }
 
-  /* LAYOUT */
   .shell { display: flex; min-height: 100vh; }
 
   .sidebar {
@@ -80,14 +79,12 @@
   .nav-btn.primary { background: rgba(255,255,255,0.92); color: var(--accent); }
   .nav-btn.primary:hover { background: #fff; }
 
-  /* MAIN */
   .main { flex: 1; padding: 32px 36px; max-width: calc(100% - 220px); overflow-x: hidden; }
 
   .page-header { margin-bottom: 28px; }
   .page-header h2 { font-size: 22px; font-weight: 600; }
   .page-header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
 
-  /* METRIC STRIP */
   .metric-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
   .metric-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -98,7 +95,6 @@
   .metric-card .m-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
   .metric-card.today { border-left: 3px solid var(--accent); }
 
-  /* CHARTS */
   .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
   .chart-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -107,7 +103,6 @@
   .chart-card h3 { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
   .chart-wrap { position: relative; height: 140px; }
 
-  /* TOOLBAR */
   .toolbar {
     display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
   }
@@ -128,7 +123,6 @@
   }
   .export-btn:hover { background: var(--surface2); }
 
-  /* DAY GROUPS */
   .day-group { margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); }
   .day-header {
     display: flex; align-items: center; gap: 12px;
@@ -159,7 +153,6 @@
   tbody td { padding: 11px 14px; font-size: 13px; color: var(--text); }
   .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
 
-  /* PILLS */
   .pill { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 11px; font-weight: 500; white-space: nowrap; }
   .t-BAV  { background: var(--blue-bg);   color: var(--blue); }
   .t-BIV  { background: var(--green-bg);  color: var(--green); }
@@ -174,7 +167,6 @@
   .o-Transfer { background: var(--amber-bg);  color: var(--amber); }
   .o-Snooze   { background: var(--surface2);  color: var(--text2); border: 1px solid var(--border); }
 
-  /* ROW ACTIONS */
   .row-actions { display: flex; gap: 5px; opacity: 0; transition: opacity 0.15s; }
   tbody tr:hover .row-actions { opacity: 1; }
   .row-btn {
@@ -185,11 +177,9 @@
   .row-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
   .row-btn.del:hover { background: var(--red-bg); color: var(--red); border-color: #f1948a; }
 
-  /* EMPTY */
   .empty-wrap { padding: 60px 20px; text-align: center; color: var(--text3); font-size: 14px; }
   .empty-wrap p { margin-top: 8px; font-size: 12px; }
 
-  /* MODAL */
   .overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(20,16,10,0.45); z-index: 100;
@@ -221,6 +211,20 @@
   }
   .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,24,22,0.06); }
 
+  /* Auto-count display */
+  .count-display {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--surface2);
+  }
+  .count-number {
+    font-size: 22px; font-weight: 600; font-family: 'DM Mono', monospace;
+    color: var(--text); min-width: 28px;
+  }
+  .count-rule {
+    font-size: 11px; color: var(--text3); line-height: 1.4;
+  }
+
   .pill-grid { display: flex; flex-wrap: wrap; gap: 6px; }
   .pick-btn {
     padding: 6px 13px; border: 1px solid var(--border);
@@ -247,7 +251,6 @@
   }
   .btn-save:hover { opacity: 0.85; }
 
-  /* TOAST */
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
     background: var(--accent); color: var(--accent-fg);
@@ -274,7 +277,6 @@
 <body>
 
 <div class="shell">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div>
       <div class="sidebar-logo">TASK TRACKER</div>
@@ -307,14 +309,12 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <div class="page-header">
       <h2>Task Log</h2>
       <p id="mainSubtitle">All tasks grouped by date</p>
     </div>
 
-    <!-- METRICS -->
     <div class="metric-strip">
       <div class="metric-card today">
         <div class="m-val" id="mToday">0</div>
@@ -338,7 +338,6 @@
       </div>
     </div>
 
-    <!-- CHARTS -->
     <div class="chart-row">
       <div class="chart-card">
         <h3>Count by type</h3>
@@ -350,7 +349,6 @@
       </div>
     </div>
 
-    <!-- TOOLBAR -->
     <div class="toolbar">
       <select class="filter-sel" id="fType" onchange="render()">
         <option value="">All types</option>
@@ -369,12 +367,11 @@
       <button class="export-btn" onclick="exportXLSX()">↓ Excel</button>
     </div>
 
-    <!-- TASK LIST -->
     <div id="taskList"></div>
   </main>
 </div>
 
-<!-- ADD / EDIT MODAL -->
+<!-- MODAL -->
 <div class="overlay" id="overlay" onclick="bgClose(event)">
   <div class="modal">
     <div class="modal-top">
@@ -402,9 +399,14 @@
       <label>Outcome</label>
       <div class="pill-grid" id="outcomeBtns"></div>
     </div>
+
+    <!-- AUTO COUNT — read-only display -->
     <div class="field">
-      <label>Count</label>
-      <input type="number" id="fCount" min="1" value="1">
+      <label>Count <span style="font-size:9px;opacity:0.6;text-transform:none;letter-spacing:0;">(auto-set by type &amp; outcome)</span></label>
+      <div class="count-display">
+        <div class="count-number" id="countDisplay">—</div>
+        <div class="count-rule" id="countRule">Select a type and outcome above</div>
+      </div>
       <div class="err" id="errMsg"></div>
     </div>
 
@@ -419,24 +421,53 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-/* ── DATA ── */
-const TYPES    = ['BAV','BIV','BOV','LOA','LRV','IDV'];
-const OUTCOMES = ['RFD','Verify','RFI','Escalate','Transfer','Snooze'];
-const OC_REQ   = {RFD:2,Verify:2,RFI:2,Escalate:2,Transfer:1,Snooze:1};
-const KEY = 'tasks_nindumat_v2';
+var TYPES    = ['BAV','BIV','BOV','LOA','LRV','IDV'];
+var OUTCOMES = ['RFD','Verify','RFI','Escalate','Transfer','Snooze'];
+var KEY = 'tasks_nindumat_v2';
 
-let tasks = [];
+var tasks = [];
 try { tasks = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) {}
 
-let selType = '', selOutcome = '', editIdx = null;
-let tChart = null, oChart = null;
+var selType = '', selOutcome = '', editIdx = null;
+var tChart = null, oChart = null;
+
+/* ── COUNT RULES ── */
+function getAutoCount(type, outcome) {
+  if (type === 'BAV') return 1;
+  if (outcome === 'Transfer' || outcome === 'Snooze') return 1;
+  if (outcome === 'RFD' || outcome === 'Verify' || outcome === 'RFI' || outcome === 'Escalate') return 2;
+  return null;
+}
+
+function getCountRule(type, outcome) {
+  if (!type && !outcome) return 'Select a type and outcome above';
+  if (type === 'BAV') return 'BAV always = 1';
+  if (!outcome) return 'Select an outcome above';
+  if (outcome === 'Transfer') return 'Transfer = 1';
+  if (outcome === 'Snooze') return 'Snooze = 1';
+  if (outcome === 'RFD') return 'RFD = 2';
+  if (outcome === 'Verify') return 'Verify = 2';
+  if (outcome === 'RFI') return 'RFI = 2';
+  if (outcome === 'Escalate') return 'Escalate = 2';
+  return 'Select an outcome above';
+}
+
+function updateCountDisplay() {
+  var count = getAutoCount(selType, selOutcome);
+  var rule  = getCountRule(selType, selOutcome);
+  var numEl  = document.getElementById('countDisplay');
+  var ruleEl = document.getElementById('countRule');
+  numEl.textContent  = count !== null ? count : '—';
+  ruleEl.textContent = rule;
+}
 
 /* ── HELPERS ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function fmtDate(d) {
-  const [y,m,day] = d.split('-').map(Number);
-  const dt = new Date(y,m-1,day);
+  var parts = d.split('-');
+  var y = parseInt(parts[0]), m = parseInt(parts[1]), day = parseInt(parts[2]);
+  var dt = new Date(y, m-1, day);
   return dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
 
@@ -445,14 +476,14 @@ function save() {
 }
 
 function toast(msg) {
-  const el = document.getElementById('toast');
+  var el = document.getElementById('toast');
   el.textContent = msg;
   el.style.display = 'block';
-  setTimeout(()=> el.style.display='none', 2200);
+  setTimeout(function(){ el.style.display='none'; }, 2200);
 }
 
 /* ── SIDEBAR DATE ── */
-const now = new Date();
+var now = new Date();
 document.getElementById('sideDate').textContent =
   now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 document.getElementById('mainSubtitle').textContent =
@@ -460,13 +491,20 @@ document.getElementById('mainSubtitle').textContent =
 
 /* ── METRICS ── */
 function updateMetrics() {
-  const total = tasks.reduce((s,t)=>s+t.count,0);
-  const tday  = tasks.filter(t=>t.date===todayStr()).reduce((s,t)=>s+t.count,0);
-  const byDay = {};
-  tasks.forEach(t=>{ byDay[t.date]=(byDay[t.date]||0)+t.count; });
-  const days = Object.keys(byDay).length;
-  const avg  = days ? Math.round(total/days) : 0;
-  const peak = days ? Math.max(...Object.values(byDay)) : 0;
+  var total = 0;
+  for (var i = 0; i < tasks.length; i++) { total += tasks[i].count; }
+  var tday = 0;
+  for (var i = 0; i < tasks.length; i++) { if (tasks[i].date === todayStr()) tday += tasks[i].count; }
+  var byDay = {};
+  for (var i = 0; i < tasks.length; i++) {
+    byDay[tasks[i].date] = (byDay[tasks[i].date] || 0) + tasks[i].count;
+  }
+  var dayKeys = Object.keys(byDay);
+  var days = dayKeys.length;
+  var avg  = days ? Math.round(total/days) : 0;
+  var peak = 0;
+  for (var k = 0; k < dayKeys.length; k++) { if (byDay[dayKeys[k]] > peak) peak = byDay[dayKeys[k]]; }
+
   document.getElementById('sTotalCount').textContent = total;
   document.getElementById('sTodayCount').textContent = tday;
   document.getElementById('sActiveDays').textContent = days;
@@ -478,96 +516,116 @@ function updateMetrics() {
 }
 
 /* ── CHARTS ── */
-const TYPE_COLORS    = ['#378ADD','#2d9c65','#e6a817','#9b59b6','#16a085','#d35400'];
-const OUTCOME_COLORS = ['#2980b9','#27ae60','#8e44ad','#c0392b','#f39c12','#95a5a6'];
+var TYPE_COLORS    = ['#378ADD','#2d9c65','#e6a817','#9b59b6','#16a085','#d35400'];
+var OUTCOME_COLORS = ['#2980b9','#27ae60','#8e44ad','#c0392b','#f39c12','#95a5a6'];
 
 function updateCharts() {
-  const tc={}, oc={};
-  tasks.forEach(t=>{ tc[t.type]=(tc[t.type]||0)+t.count; oc[t.outcome]=(oc[t.outcome]||0)+t.count; });
-  const tlbls=Object.keys(tc), tdata=Object.values(tc);
-  const olbls=Object.keys(oc), odata=Object.values(oc);
+  var tc = {}, oc = {};
+  for (var i = 0; i < tasks.length; i++) {
+    tc[tasks[i].type]    = (tc[tasks[i].type]    || 0) + tasks[i].count;
+    oc[tasks[i].outcome] = (oc[tasks[i].outcome] || 0) + tasks[i].count;
+  }
+  var tlbls = Object.keys(tc), tdata = Object.values(tc);
+  var olbls = Object.keys(oc), odata = Object.values(oc);
 
-  function mkCfg(labels,data,colors) {
+  function mkCfg(labels, data, colors) {
     return {
-      type:'doughnut',
-      data:{labels,datasets:[{data,backgroundColor:colors.slice(0,data.length),borderWidth:1,borderColor:'#faf9f7',hoverOffset:3}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
-        plugins:{legend:{position:'right',labels:{boxWidth:10,padding:8,font:{size:10,family:'Sora'}}}}}
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: colors.slice(0, data.length), borderWidth: 1, borderColor: '#faf9f7', hoverOffset: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+        plugins: { legend: { position: 'right', labels: { boxWidth: 10, padding: 8, font: { size: 10, family: 'Sora' } } } } }
     };
   }
-  if(tChart) tChart.destroy();
-  if(oChart) oChart.destroy();
-  if(tlbls.length) tChart = new Chart(document.getElementById('typeChart'),    mkCfg(tlbls,tdata,TYPE_COLORS));
-  if(olbls.length) oChart = new Chart(document.getElementById('outcomeChart'), mkCfg(olbls,odata,OUTCOME_COLORS));
+  if (tChart) tChart.destroy();
+  if (oChart) oChart.destroy();
+  if (tlbls.length) tChart = new Chart(document.getElementById('typeChart'),    mkCfg(tlbls, tdata, TYPE_COLORS));
+  if (olbls.length) oChart = new Chart(document.getElementById('outcomeChart'), mkCfg(olbls, odata, OUTCOME_COLORS));
 }
 
 /* ── RENDER TABLE ── */
 function getFiltered() {
-  const ft = document.getElementById('fType').value;
-  const fo = document.getElementById('fOutcome').value;
-  return tasks.map((t,i)=>({...t,_i:i})).filter(t=>(!ft||t.type===ft)&&(!fo||t.outcome===fo));
+  var ft = document.getElementById('fType').value;
+  var fo = document.getElementById('fOutcome').value;
+  var result = [];
+  for (var i = 0; i < tasks.length; i++) {
+    if ((!ft || tasks[i].type === ft) && (!fo || tasks[i].outcome === fo)) {
+      var t = {};
+      for (var k in tasks[i]) t[k] = tasks[i][k];
+      t._i = i;
+      result.push(t);
+    }
+  }
+  return result;
 }
 
 function render() {
   updateMetrics();
   updateCharts();
 
-  const filtered = getFiltered();
-  const fi = document.getElementById('filterInfo');
-  fi.textContent = filtered.length !== tasks.length ? `${filtered.length} of ${tasks.length} tasks` : '';
+  var filtered = getFiltered();
+  var fi = document.getElementById('filterInfo');
+  fi.textContent = filtered.length !== tasks.length ? (filtered.length + ' of ' + tasks.length + ' tasks') : '';
 
-  const grouped = {};
-  filtered.forEach(t=>{ if(!grouped[t.date]) grouped[t.date]=[]; grouped[t.date].push(t); });
-  const dates = Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+  var grouped = {};
+  for (var i = 0; i < filtered.length; i++) {
+    var t = filtered[i];
+    if (!grouped[t.date]) grouped[t.date] = [];
+    grouped[t.date].push(t);
+  }
+  var dates = Object.keys(grouped).sort(function(a,b){ return b.localeCompare(a); });
 
-  const list = document.getElementById('taskList');
-  if(!dates.length){
-    list.innerHTML = `<div class="empty-wrap">No tasks yet.<p>Click "+ Add task" to log your first task.</p></div>`;
+  var list = document.getElementById('taskList');
+  if (!dates.length) {
+    list.innerHTML = '<div class="empty-wrap">No tasks yet.<p>Click "+ Add task" to log your first task.</p></div>';
     return;
   }
 
-  list.innerHTML = dates.map(date=>{
-    const group = grouped[date];
-    const dayCount = group.reduce((s,t)=>s+t.count,0);
-    const isToday  = date === todayStr();
-    const todayBadge = isToday ? `<span class="today-tag">Today</span>` : '';
-    const rows = group.map(t=>`
-      <tr>
-        <td class="mono">${t.taskId}</td>
-        <td class="mono">${t.cid}</td>
-        <td><span class="pill t-${t.type}">${t.type}</span></td>
-        <td><span class="pill o-${t.outcome}">${t.outcome}</span></td>
-        <td class="mono" style="font-weight:600">${t.count}</td>
-        <td>
-          <div class="row-actions">
-            <button class="row-btn" onclick="openModal(${t._i})">Edit</button>
-            <button class="row-btn del" onclick="delTask(${t._i})">Delete</button>
-          </div>
-        </td>
-      </tr>`).join('');
-    return `<div class="day-group" id="dg-${date}">
-      <div class="day-header" onclick="toggleDay('${date}')">
-        <span class="day-chevron">▼</span>
-        <span class="day-name">${fmtDate(date)}</span>
-        ${todayBadge}
-        <div class="day-meta">
-          <span class="day-chip">${group.length} task${group.length!==1?'s':''}</span>
-          <span class="day-chip">Count: ${dayCount}</span>
-        </div>
-      </div>
-      <div class="task-table-wrap">
-        <table>
-          <thead><tr><th>Task ID</th><th>CID</th><th>Type</th><th>Outcome</th><th>Count</th><th></th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    </div>`;
-  }).join('');
+  var html = '';
+  for (var d = 0; d < dates.length; d++) {
+    var date  = dates[d];
+    var group = grouped[date];
+    var dayCount = 0;
+    for (var i = 0; i < group.length; i++) dayCount += group[i].count;
+    var isToday    = date === todayStr();
+    var todayBadge = isToday ? '<span class="today-tag">Today</span>' : '';
+    var rows = '';
+    for (var i = 0; i < group.length; i++) {
+      var t = group[i];
+      rows += '<tr>' +
+        '<td class="mono">' + t.taskId + '</td>' +
+        '<td class="mono">' + t.cid + '</td>' +
+        '<td><span class="pill t-' + t.type + '">' + t.type + '</span></td>' +
+        '<td><span class="pill o-' + t.outcome + '">' + t.outcome + '</span></td>' +
+        '<td class="mono" style="font-weight:600">' + t.count + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="row-btn" onclick="openModal(' + t._i + ')">Edit</button>' +
+          '<button class="row-btn del" onclick="delTask(' + t._i + ')">Delete</button>' +
+        '</div></td>' +
+        '</tr>';
+    }
+    html += '<div class="day-group" id="dg-' + date + '">' +
+      '<div class="day-header" onclick="toggleDay(\'' + date + '\')">' +
+        '<span class="day-chevron">▼</span>' +
+        '<span class="day-name">' + fmtDate(date) + '</span>' +
+        todayBadge +
+        '<div class="day-meta">' +
+          '<span class="day-chip">' + group.length + ' task' + (group.length !== 1 ? 's' : '') + '</span>' +
+          '<span class="day-chip">Count: ' + dayCount + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="task-table-wrap">' +
+        '<table>' +
+          '<thead><tr><th>Task ID</th><th>CID</th><th>Type</th><th>Outcome</th><th>Count</th><th></th></tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>';
+  }
+  list.innerHTML = html;
 }
 
 function toggleDay(date) {
-  const el = document.getElementById('dg-'+date);
-  el.classList.toggle('collapsed');
+  document.getElementById('dg-' + date).classList.toggle('collapsed');
 }
 
 function clearFilters() {
@@ -578,113 +636,125 @@ function clearFilters() {
 
 /* ── MODAL ── */
 function setupPickBtns() {
-  document.getElementById('typeBtns').innerHTML = TYPES.map(t=>
-    `<button class="pick-btn${selType===t?' active':''}" onclick="pickType('${t}')">${t}</button>`
-  ).join('');
-  document.getElementById('outcomeBtns').innerHTML = OUTCOMES.map(o=>
-    `<button class="pick-btn${selOutcome===o?' active':''}" onclick="pickOutcome('${o}')">${o}</button>`
-  ).join('');
+  var typeHtml = '';
+  for (var i = 0; i < TYPES.length; i++) {
+    typeHtml += '<button class="pick-btn' + (selType === TYPES[i] ? ' active' : '') + '" onclick="pickType(\'' + TYPES[i] + '\')">' + TYPES[i] + '</button>';
+  }
+  document.getElementById('typeBtns').innerHTML = typeHtml;
+
+  var outcomeHtml = '';
+  for (var i = 0; i < OUTCOMES.length; i++) {
+    outcomeHtml += '<button class="pick-btn' + (selOutcome === OUTCOMES[i] ? ' active' : '') + '" onclick="pickOutcome(\'' + OUTCOMES[i] + '\')">' + OUTCOMES[i] + '</button>';
+  }
+  document.getElementById('outcomeBtns').innerHTML = outcomeHtml;
+
+  updateCountDisplay();
 }
 
-function pickType(t)    { selType=t;    setupPickBtns(); }
-function pickOutcome(o) { selOutcome=o; setupPickBtns(); }
+function pickType(t) {
+  selType = t;
+  setupPickBtns();
+}
+
+function pickOutcome(o) {
+  selOutcome = o;
+  setupPickBtns();
+}
 
 function openModal(idx) {
   editIdx = idx;
-  selType=''; selOutcome='';
-  document.getElementById('errMsg').style.display='none';
-  if(idx !== null) {
-    const t = tasks[idx];
+  selType = ''; selOutcome = '';
+  document.getElementById('errMsg').style.display = 'none';
+  if (idx !== null) {
+    var t = tasks[idx];
     document.getElementById('modalTitle').textContent = 'Edit task';
     document.getElementById('fDate').value   = t.date;
     document.getElementById('fTaskId').value = t.taskId;
     document.getElementById('fCid').value    = t.cid;
-    document.getElementById('fCount').value  = t.count;
-    selType=t.type; selOutcome=t.outcome;
+    selType = t.type; selOutcome = t.outcome;
   } else {
     document.getElementById('modalTitle').textContent = 'Add task';
-    document.getElementById('fDate').value   = todayStr(); // auto-fill today
+    document.getElementById('fDate').value   = todayStr();
     document.getElementById('fTaskId').value = '';
     document.getElementById('fCid').value    = '';
-    document.getElementById('fCount').value  = 1;
   }
   setupPickBtns();
   document.getElementById('overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('fTaskId').focus(),120);
+  setTimeout(function(){ document.getElementById('fTaskId').focus(); }, 120);
 }
 
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
-function bgClose(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+function bgClose(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
 function saveTask() {
-  const date   = document.getElementById('fDate').value;
-  const taskId = document.getElementById('fTaskId').value.trim();
-  const cid    = document.getElementById('fCid').value.trim();
-  const count  = parseInt(document.getElementById('fCount').value);
-  const err    = document.getElementById('errMsg');
-  err.style.display='none';
+  var date   = document.getElementById('fDate').value;
+  var taskId = document.getElementById('fTaskId').value.trim();
+  var cid    = document.getElementById('fCid').value.trim();
+  var err    = document.getElementById('errMsg');
+  err.style.display = 'none';
 
-  if(!date||!taskId||!cid){ err.textContent='Please fill in date, task ID and CID.'; err.style.display='block'; return; }
-  if(!selType)    { err.textContent='Please select a type.';    err.style.display='block'; return; }
-  if(!selOutcome) { err.textContent='Please select an outcome.'; err.style.display='block'; return; }
-  if(isNaN(count)||count<1){ err.textContent='Count must be at least 1.'; err.style.display='block'; return; }
-  const req = selType==='BAV' ? 1 : OC_REQ[selOutcome];
-  if(count!==req){
-    err.textContent = selType==='BAV' ? 'BAV tasks must have count = 1.' : `${selOutcome} requires count = ${req}.`;
-    err.style.display='block'; return;
-  }
+  if (!date || !taskId || !cid) { err.textContent = 'Please fill in date, task ID and CID.'; err.style.display = 'block'; return; }
+  if (!selType)    { err.textContent = 'Please select a type.';    err.style.display = 'block'; return; }
+  if (!selOutcome) { err.textContent = 'Please select an outcome.'; err.style.display = 'block'; return; }
 
-  const task = {date,taskId,cid,type:selType,outcome:selOutcome,count};
-  if(editIdx!==null){ tasks[editIdx]=task; } else { tasks.push(task); }
+  var count = getAutoCount(selType, selOutcome);
+  var task  = { date: date, taskId: taskId, cid: cid, type: selType, outcome: selOutcome, count: count };
+
+  if (editIdx !== null) { tasks[editIdx] = task; } else { tasks.push(task); }
   save(); render(); closeModal();
-  toast(editIdx!==null ? '✓ Task updated' : '✓ Task added');
+  toast(editIdx !== null ? '✓ Task updated' : '✓ Task added');
 }
 
 function delTask(idx) {
-  if(!confirm('Delete this task?')) return;
-  tasks.splice(idx,1);
+  if (!confirm('Delete this task?')) return;
+  tasks.splice(idx, 1);
   save(); render();
   toast('Task deleted');
 }
 
 /* ── EXPORT CSV ── */
 function exportCSV() {
-  if(!tasks.length){ toast('No tasks to export'); return; }
-  const headers = ['Date','Task ID','CID','Type','Outcome','Count'];
-  const rows = tasks.map(t=>[t.date,t.taskId,t.cid,t.type,t.outcome,t.count].map(v=>`"${v}"`).join(','));
-  const csv = [headers.join(','),...rows].join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download=`tasks_${todayStr()}.csv`; a.click();
+  if (!tasks.length) { toast('No tasks to export'); return; }
+  var headers = ['Date','Task ID','CID','Type','Outcome','Count'];
+  var rows = [];
+  for (var i = 0; i < tasks.length; i++) {
+    var t = tasks[i];
+    rows.push([t.date, t.taskId, t.cid, t.type, t.outcome, t.count].map(function(v){ return '"' + v + '"'; }).join(','));
+  }
+  var csv  = [headers.join(',')].concat(rows).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = 'tasks_' + todayStr() + '.csv'; a.click();
   URL.revokeObjectURL(url);
   toast('✓ CSV exported');
 }
 
-/* ── EXPORT EXCEL (xlsx via SheetJS) ── */
+/* ── EXPORT EXCEL ── */
 function exportXLSX() {
-  if(!tasks.length){ toast('No tasks to export'); return; }
-  const script = document.createElement('script');
+  if (!tasks.length) { toast('No tasks to export'); return; }
+  var script = document.createElement('script');
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
   script.onload = function() {
-    const ws_data = [
-      ['Date','Task ID','CID','Type','Outcome','Count'],
-      ...tasks.map(t=>[t.date,t.taskId,t.cid,t.type,t.outcome,t.count])
-    ];
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    var wsData = [['Date','Task ID','CID','Type','Outcome','Count']];
+    for (var i = 0; i < tasks.length; i++) {
+      var t = tasks[i];
+      wsData.push([t.date, t.taskId, t.cid, t.type, t.outcome, t.count]);
+    }
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(wsData);
     ws['!cols'] = [{wch:12},{wch:12},{wch:14},{wch:8},{wch:10},{wch:7}];
-    XLSX.utils.book_append_sheet(wb,'Tasks',ws);
-    XLSX.writeFile(wb, `tasks_${todayStr()}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, 'Tasks', ws);
+    XLSX.writeFile(wb, 'tasks_' + todayStr() + '.xlsx');
     toast('✓ Excel exported');
   };
-  if(window.XLSX) { script.onload(); } else { document.head.appendChild(script); }
+  if (window.XLSX) { script.onload(); } else { document.head.appendChild(script); }
 }
 
 /* ── KEYBOARD ── */
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape') closeModal();
-  if((e.metaKey||e.ctrlKey)&&e.key==='n'){ e.preventDefault(); openModal(null); }
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); openModal(null); }
 });
 
 /* ── INIT ── */
