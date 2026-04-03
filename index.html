@@ -167,6 +167,15 @@
   .o-Transfer { background: var(--amber-bg);  color: var(--amber); }
   .o-Snooze   { background: var(--surface2);  color: var(--text2); border: 1px solid var(--border); }
 
+  /* Subtask badge in table */
+  .subtask-badge {
+    display: inline-block; padding: 1px 7px; border-radius: 100px;
+    font-size: 10px; font-weight: 500;
+    background: #e8e4fc; color: #4a235a;
+    border: 1px solid #c9bff5;
+    margin-left: 4px; vertical-align: middle;
+  }
+
   .row-actions { display: flex; gap: 5px; opacity: 0; transition: opacity 0.15s; }
   tbody tr:hover .row-actions { opacity: 1; }
   .row-btn {
@@ -210,6 +219,34 @@
     background: var(--surface); color: var(--text); outline: none; transition: border 0.15s;
   }
   .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,24,22,0.06); }
+
+  /* ── SUBTASK TOGGLE ── */
+  .subtask-toggle-wrap {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--surface2);
+    cursor: pointer; user-select: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .subtask-toggle-wrap:hover { border-color: var(--border2); background: #e8e4fc22; }
+  .subtask-toggle-wrap.on { border-color: #9b7ef8; background: #f0ecff; }
+
+  .toggle-box {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1.5px solid var(--border2); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .subtask-toggle-wrap.on .toggle-box {
+    background: #4a235a; border-color: #4a235a;
+  }
+  .toggle-check { display: none; color: #fff; font-size: 11px; font-weight: 700; }
+  .subtask-toggle-wrap.on .toggle-check { display: block; }
+
+  .toggle-label { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .subtask-toggle-wrap.on .toggle-label { color: #4a235a; }
+  .toggle-hint { margin-left: auto; font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .subtask-toggle-wrap.on .toggle-hint { color: #7c5cbf; font-weight: 500; }
 
   /* Auto-count display */
   .count-display {
@@ -360,6 +397,11 @@
         <option>RFD</option><option>Verify</option><option>RFI</option>
         <option>Escalate</option><option>Transfer</option><option>Snooze</option>
       </select>
+      <select class="filter-sel" id="fSubtask" onchange="render()">
+        <option value="">All tasks</option>
+        <option value="yes">Subtasks only</option>
+        <option value="no">Main tasks only</option>
+      </select>
       <button class="clear-link" onclick="clearFilters()">Clear</button>
       <div class="toolbar-spacer"></div>
       <span class="toolbar-count" id="filterInfo"></span>
@@ -400,6 +442,18 @@
       <div class="pill-grid" id="outcomeBtns"></div>
     </div>
 
+    <!-- SUBTASK TOGGLE -->
+    <div class="field">
+      <label>Subtask</label>
+      <div class="subtask-toggle-wrap" id="subtaskToggle" onclick="toggleSubtask()">
+        <div class="toggle-box">
+          <span class="toggle-check">✓</span>
+        </div>
+        <span class="toggle-label">Mark as subtask</span>
+        <span class="toggle-hint" id="subtaskHint">count = 1</span>
+      </div>
+    </div>
+
     <!-- AUTO COUNT — read-only display -->
     <div class="field">
       <label>Count <span style="font-size:9px;opacity:0.6;text-transform:none;letter-spacing:0;">(auto-set by type &amp; outcome)</span></label>
@@ -428,21 +482,20 @@ var KEY = 'tasks_nindumat_v2';
 var tasks = [];
 try { tasks = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) {}
 
-var selType = '', selOutcome = '', editIdx = null;
+var selType = '', selOutcome = '', isSubtask = false, editIdx = null;
 var tChart = null, oChart = null;
-var isSubtask = false; // Flag to identify if we're adding a subtask
 
 /* ── COUNT RULES ── */
-function getAutoCount(type, outcome) {
-  if (isSubtask) return 1; // Subtasks always have count = 1
+function getAutoCount(type, outcome, subtask) {
+  if (subtask) return 1;
   if (type === 'BAV') return 1;
   if (outcome === 'Transfer' || outcome === 'Snooze') return 1;
   if (outcome === 'RFD' || outcome === 'Verify' || outcome === 'RFI' || outcome === 'Escalate') return 2;
   return null;
 }
 
-function getCountRule(type, outcome) {
-  if (isSubtask) return 'Subtasks always = 1';
+function getCountRule(type, outcome, subtask) {
+  if (subtask) return 'Subtask — always count = 1';
   if (!type && !outcome) return 'Select a type and outcome above';
   if (type === 'BAV') return 'BAV always = 1';
   if (!outcome) return 'Select an outcome above';
@@ -456,12 +509,40 @@ function getCountRule(type, outcome) {
 }
 
 function updateCountDisplay() {
-  var count = getAutoCount(selType, selOutcome);
-  var rule  = getCountRule(selType, selOutcome);
+  var count = getAutoCount(selType, selOutcome, isSubtask);
+  var rule  = getCountRule(selType, selOutcome, isSubtask);
   var numEl  = document.getElementById('countDisplay');
   var ruleEl = document.getElementById('countRule');
   numEl.textContent  = count !== null ? count : '—';
   ruleEl.textContent = rule;
+}
+
+/* ── SUBTASK TOGGLE ── */
+function toggleSubtask() {
+  isSubtask = !isSubtask;
+  var wrap = document.getElementById('subtaskToggle');
+  var hint = document.getElementById('subtaskHint');
+  if (isSubtask) {
+    wrap.classList.add('on');
+    hint.textContent = 'count forced = 1';
+  } else {
+    wrap.classList.remove('on');
+    hint.textContent = 'count = 1';
+  }
+  updateCountDisplay();
+}
+
+function setSubtaskState(val) {
+  isSubtask = val;
+  var wrap = document.getElementById('subtaskToggle');
+  var hint = document.getElementById('subtaskHint');
+  if (isSubtask) {
+    wrap.classList.add('on');
+    hint.textContent = 'count forced = 1';
+  } else {
+    wrap.classList.remove('on');
+    hint.textContent = 'count = 1';
+  }
 }
 
 /* ── HELPERS ── */
@@ -495,31 +576,12 @@ document.getElementById('mainSubtitle').textContent =
 /* ── METRICS ── */
 function updateMetrics() {
   var total = 0;
-  for (var i = 0; i < tasks.length; i++) { 
-    total += tasks[i].count; 
-    if (tasks[i].subtasks) {
-      for (var j = 0; j < tasks[i].subtasks.length; j++) {
-        total += tasks[i].subtasks[j].count;
-      }
-    }
-  }
+  for (var i = 0; i < tasks.length; i++) { total += tasks[i].count; }
   var tday = 0;
-  for (var i = 0; i < tasks.length; i++) { 
-    if (tasks[i].date === todayStr()) tday += tasks[i].count; 
-    if (tasks[i].subtasks) {
-      for (var j = 0; j < tasks[i].subtasks.length; j++) {
-        if (tasks[i].subtasks[j].date === todayStr()) tday += tasks[i].subtasks[j].count;
-      }
-    }
-  }
+  for (var i = 0; i < tasks.length; i++) { if (tasks[i].date === todayStr()) tday += tasks[i].count; }
   var byDay = {};
   for (var i = 0; i < tasks.length; i++) {
     byDay[tasks[i].date] = (byDay[tasks[i].date] || 0) + tasks[i].count;
-    if (tasks[i].subtasks) {
-      for (var j = 0; j < tasks[i].subtasks.length; j++) {
-        byDay[tasks[i].subtasks[j].date] = (byDay[tasks[i].subtasks[j].date] || 0) + tasks[i].subtasks[j].count;
-      }
-    }
   }
   var dayKeys = Object.keys(byDay);
   var days = dayKeys.length;
@@ -546,12 +608,6 @@ function updateCharts() {
   for (var i = 0; i < tasks.length; i++) {
     tc[tasks[i].type]    = (tc[tasks[i].type]    || 0) + tasks[i].count;
     oc[tasks[i].outcome] = (oc[tasks[i].outcome] || 0) + tasks[i].count;
-    if (tasks[i].subtasks) {
-      for (var j = 0; j < tasks[i].subtasks.length; j++) {
-        tc[tasks[i].subtasks[j].type]    = (tc[tasks[i].subtasks[j].type]    || 0) + tasks[i].subtasks[j].count;
-        oc[tasks[i].subtasks[j].outcome] = (oc[tasks[i].subtasks[j].outcome] || 0) + tasks[i].subtasks[j].count;
-      }
-    }
   }
   var tlbls = Object.keys(tc), tdata = Object.values(tc);
   var olbls = Object.keys(oc), odata = Object.values(oc);
@@ -574,14 +630,18 @@ function updateCharts() {
 function getFiltered() {
   var ft = document.getElementById('fType').value;
   var fo = document.getElementById('fOutcome').value;
+  var fs = document.getElementById('fSubtask').value;
   var result = [];
   for (var i = 0; i < tasks.length; i++) {
-    if ((!ft || tasks[i].type === ft) && (!fo || tasks[i].outcome === fo)) {
-      var t = {};
-      for (var k in tasks[i]) t[k] = tasks[i][k];
-      t._i = i;
-      result.push(t);
-    }
+    var t = tasks[i];
+    if (ft && t.type !== ft) continue;
+    if (fo && t.outcome !== fo) continue;
+    if (fs === 'yes' && !t.subtask) continue;
+    if (fs === 'no'  &&  t.subtask) continue;
+    var copy = {};
+    for (var k in t) copy[k] = t[k];
+    copy._i = i;
+    result.push(copy);
   }
   return result;
 }
@@ -619,34 +679,18 @@ function render() {
     var rows = '';
     for (var i = 0; i < group.length; i++) {
       var t = group[i];
+      var subtaskBadge = t.subtask ? '<span class="subtask-badge">subtask</span>' : '';
       rows += '<tr>' +
-        '<td class="mono">' + t.taskId + '</td>' +
+        '<td class="mono">' + t.taskId + subtaskBadge + '</td>' +
         '<td class="mono">' + t.cid + '</td>' +
         '<td><span class="pill t-' + t.type + '">' + t.type + '</span></td>' +
         '<td><span class="pill o-' + t.outcome + '">' + t.outcome + '</span></td>' +
         '<td class="mono" style="font-weight:600">' + t.count + '</td>' +
         '<td><div class="row-actions">' +
-          '<button class="row-btn" onclick="openModal(' + t._i + ')">✏️ Edit</button>' +
-          '<button class="row-btn del" onclick="delTask(' + t._i + ')">🗑️ Delete</button>' +
+          '<button class="row-btn" onclick="openModal(' + t._i + ')">Edit</button>' +
+          '<button class="row-btn del" onclick="delTask(' + t._i + ')">Delete</button>' +
         '</div></td>' +
         '</tr>';
-      // Render subtasks if any
-      if (t.subtasks && t.subtasks.length) {
-        for (var s = 0; s < t.subtasks.length; s++) {
-          var st = t.subtasks[s];
-          rows += '<tr class="subtask-row">' + 
-            '<td class="mono" style="padding-left: 24px;">' + st.taskId + '</td>' +
-            '<td class="mono" style="padding-left: 24px;">' + st.cid + '</td>' +
-            '<td><span class="pill t-' + st.type + '">' + st.type + '</span></td>' +
-            '<td><span class="pill o-' + st.outcome + '">' + st.outcome + '</span></td>' +
-            '<td class="mono" style="font-weight:600">' + st.count + '</td>' +
-            '<td><div class="row-actions">' +
-              '<button class="row-btn" onclick="openModalSubtask(' + t._i + ',' + s + ')">✏️ Edit</button>' +
-              '<button class="row-btn del" onclick="delSubtask(' + t._i + ',' + s + ')">🗑️ Delete</button>' +
-            '</div></td>' +
-            '</tr>';
-        }
-      }
     }
     html += '<div class="day-group" id="dg-' + date + '">' +
       '<div class="day-header" onclick="toggleDay(\'' + date + '\')">' +
@@ -676,6 +720,7 @@ function toggleDay(date) {
 function clearFilters() {
   document.getElementById('fType').value = '';
   document.getElementById('fOutcome').value = '';
+  document.getElementById('fSubtask').value = '';
   render();
 }
 
@@ -712,4 +757,100 @@ function openModal(idx) {
   document.getElementById('errMsg').style.display = 'none';
   if (idx !== null) {
     var t = tasks[idx];
-    document.getElement
+    document.getElementById('modalTitle').textContent = 'Edit task';
+    document.getElementById('fDate').value   = t.date;
+    document.getElementById('fTaskId').value = t.taskId;
+    document.getElementById('fCid').value    = t.cid;
+    selType = t.type; selOutcome = t.outcome;
+    setSubtaskState(t.subtask ? true : false);
+  } else {
+    document.getElementById('modalTitle').textContent = 'Add task';
+    document.getElementById('fDate').value   = todayStr();
+    document.getElementById('fTaskId').value = '';
+    document.getElementById('fCid').value    = '';
+    setSubtaskState(false);
+  }
+  setupPickBtns();
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('fTaskId').focus(); }, 120);
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function bgClose(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+function saveTask() {
+  var date   = document.getElementById('fDate').value;
+  var taskId = document.getElementById('fTaskId').value.trim();
+  var cid    = document.getElementById('fCid').value.trim();
+  var err    = document.getElementById('errMsg');
+  err.style.display = 'none';
+
+  if (!date || !taskId || !cid) { err.textContent = 'Please fill in date, task ID and CID.'; err.style.display = 'block'; return; }
+  if (!selType)    { err.textContent = 'Please select a type.';    err.style.display = 'block'; return; }
+  if (!selOutcome) { err.textContent = 'Please select an outcome.'; err.style.display = 'block'; return; }
+
+  var count = getAutoCount(selType, selOutcome, isSubtask);
+  var task  = { date: date, taskId: taskId, cid: cid, type: selType, outcome: selOutcome, count: count, subtask: isSubtask };
+
+  if (editIdx !== null) { tasks[editIdx] = task; } else { tasks.push(task); }
+  save(); render(); closeModal();
+  toast(editIdx !== null ? '✓ Task updated' : '✓ Task added');
+}
+
+function delTask(idx) {
+  if (!confirm('Delete this task?')) return;
+  tasks.splice(idx, 1);
+  save(); render();
+  toast('Task deleted');
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV() {
+  if (!tasks.length) { toast('No tasks to export'); return; }
+  var headers = ['Date','Task ID','CID','Type','Outcome','Count','Subtask'];
+  var rows = [];
+  for (var i = 0; i < tasks.length; i++) {
+    var t = tasks[i];
+    rows.push([t.date, t.taskId, t.cid, t.type, t.outcome, t.count, t.subtask ? 'Yes' : 'No'].map(function(v){ return '"' + v + '"'; }).join(','));
+  }
+  var csv  = [headers.join(',')].concat(rows).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = 'tasks_' + todayStr() + '.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ CSV exported');
+}
+
+/* ── EXPORT EXCEL ── */
+function exportXLSX() {
+  if (!tasks.length) { toast('No tasks to export'); return; }
+  var script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  script.onload = function() {
+    var wsData = [['Date','Task ID','CID','Type','Outcome','Count','Subtask']];
+    for (var i = 0; i < tasks.length; i++) {
+      var t = tasks[i];
+      wsData.push([t.date, t.taskId, t.cid, t.type, t.outcome, t.count, t.subtask ? 'Yes' : 'No']);
+    }
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{wch:12},{wch:12},{wch:14},{wch:8},{wch:10},{wch:7},{wch:9}];
+    XLSX.utils.book_append_sheet(wb, 'Tasks', ws);
+    XLSX.writeFile(wb, 'tasks_' + todayStr() + '.xlsx');
+    toast('✓ Excel exported');
+  };
+  if (window.XLSX) { script.onload(); } else { document.head.appendChild(script); }
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); openModal(null); }
+});
+
+/* ── INIT ── */
+render();
+</script>
+</body>
+</html>
